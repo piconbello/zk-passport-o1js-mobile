@@ -33,10 +33,27 @@
     },
     "plugins": [
       "expo-router",
-      "react-native-nfc-manager"
+      "react-native-nfc-manager",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.0"
+          }
+        }
+      ],
+      "./withMasterList"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "assetBundlePatterns": [
+      "assets/*"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "34f55a25-5377-443b-9aef-8c14666b50d7"
+      }
     }
   }
 }

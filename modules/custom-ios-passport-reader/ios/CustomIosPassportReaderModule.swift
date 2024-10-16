@@ -1,5 +1,6 @@
 import ExpoModulesCore
-import NFCPassportReader
+// import NFCPassportReader
+
 
 public class CustomIosPassportReaderModule: Module {
   // Each module class must implement the definition function. The definition consists of components
@@ -19,7 +20,7 @@ public class CustomIosPassportReaderModule: Module {
     // We expect dateOfBirth, dateOfExpiry etc as YYMMdd
     Function("getMRZKey") { (passportNumber: String, dateOfBirth: String, dateOfExpiry: String) -> String in
       // Check out NFCPassPortReader/Examples/Example_SPM/Model/PassportUtils.swift
-
+      
       // Pad fields if necessary
       let pptNr = pad( passportNumber, fieldLength:9)
       let dob = pad( dateOfBirth, fieldLength:6)
@@ -40,13 +41,14 @@ public class CustomIosPassportReaderModule: Module {
 
       // Check out NFCPassPortReader/Examples/Example_SPM/Views/MainView.swift
       //  and https://github.com/zk-passport/openpassport/blob/main/app/ios/PassportReader.swift
-      hideKeyboard()
 
       let masterListURL = Bundle.main.url(forResource: "masterList", withExtension: ".pem")!
-        passportReader.setMasterListURL( masterListURL )
+
+      let passportReader = PassportReader()
+      passportReader.setMasterListURL( masterListURL )
 
       // Set whether to use the new Passive Authentication verification method (default true) or the old OpenSSL CMS verifiction
-      passportReader.passiveAuthenticationUsesOpenSSL = !settings.useNewVerificationMethod
+      passportReader.passiveAuthenticationUsesOpenSSL = false // !settings.useNewVerificationMethod
       
       // If we want to read only specific data groups we can using:
       //   let dataGroups : [DataGroupId] = [.COM, .SOD, .DG1, .DG2, .DG7, .DG11, .DG12, .DG14, .DG15]
@@ -65,7 +67,7 @@ public class CustomIosPassportReaderModule: Module {
         
         do {
           let passport = try await passportReader.readPassport( mrzKey: mrzKey, useExtendedMode: false,  customDisplayMessage:customMessageHandler)
-          let dump = passport.dumpPassportData(selectedDataGroups: DataGroupId.allCases, includeActiveAuthenticationData: true)
+          var dump = passport.dumpPassportData(selectedDataGroups: DataGroupId.allCases, includeActiveAuthenticationData: true)
 
           var ret = [String:String]()
           // print("documentType", passport.documentType)
@@ -194,15 +196,17 @@ public class CustomIosPassportReaderModule: Module {
 
           } catch {
             // print("Error serializing SOD data: \(error)")
-            promise.reject("E_PASSPORT_READ", error.localizedDescription, error)
+            promise.reject(Exception(name:String(describing: error), description:error.localizedDescription, code:"E_PASSPORT_READ"))
+            return
           }
 
           let stringified = String(data: try JSONEncoder().encode(ret), encoding: .utf8)
 
-          dict["openpassport"] = ret
-          promise.resolve(dict)
+          dump["openpassport"] = stringified
+          promise.resolve(dump)
         } catch {
-          promise.reject("E_PASSPORT_READ", error.localizedDescription, error)
+          promise.reject(Exception(name:String(describing: error), description:error.localizedDescription, code:"E_PASSPORT_READ"))
+          return
         }
       }
     }
@@ -216,4 +220,85 @@ public class CustomIosPassportReaderModule: Module {
       ])
     }
   }
+
+
+
+  // Util functions from andyq example app
+  func pad(_ value : String, fieldLength:Int ) -> String {
+    // Pad out field lengths with < if they are too short
+    let paddedValue = (value + String(repeating: "<", count: fieldLength)).prefix(fieldLength)
+    return String(paddedValue)
+  }
+  
+  func calcCheckSum(_ checkString : String ) -> Int {
+    let characterDict  = ["0" : "0", "1" : "1", "2" : "2", "3" : "3", "4" : "4", "5" : "5", "6" : "6", "7" : "7", "8" : "8", "9" : "9", "<" : "0", " " : "0", "A" : "10", "B" : "11", "C" : "12", "D" : "13", "E" : "14", "F" : "15", "G" : "16", "H" : "17", "I" : "18", "J" : "19", "K" : "20", "L" : "21", "M" : "22", "N" : "23", "O" : "24", "P" : "25", "Q" : "26", "R" : "27", "S" : "28","T" : "29", "U" : "30", "V" : "31", "W" : "32", "X" : "33", "Y" : "34", "Z" : "35"]
+    
+    var sum = 0
+    var m = 0
+    let multipliers : [Int] = [7, 3, 1]
+    for c in checkString {
+        guard let lookup = characterDict["\(c)"],
+            let number = Int(lookup) else { return 0 }
+        let product = number * multipliers[m]
+        sum += product
+        m = (m+1) % 3
+    }
+    
+    return (sum % 10)
+  }
+
+  // Util functions from openpassport
+  func serializeX509Wrapper(_ certificate: X509Wrapper?) -> String? {
+    guard let certificate = certificate else { return nil }
+
+    let itemsDict = certificate.getItemsAsDict()
+    var certInfoStringKeys = [String: String]()
+
+    // Convert CertificateItem keys to String keys
+    for (key, value) in itemsDict {
+      certInfoStringKeys[key.rawValue] = value
+    }
+
+    // Add PEM representation
+    let certPEM = certificate.certToPEM()
+    certInfoStringKeys["PEM"] = certPEM
+
+    do {
+      let jsonData = try JSONSerialization.data(withJSONObject: certInfoStringKeys, options: [])
+      return String(data: jsonData, encoding: .utf8)
+    } catch {
+      print("Error serializing X509Wrapper: \(error)")
+      return nil
+    }
+  }
+  func convertDataGroupHashToSerializableFormat(_ dataGroupHash: DataGroupHash) -> [String: Any] {
+    return [
+      "id": dataGroupHash.id,
+      "sodHash": dataGroupHash.sodHash,
+      "computedHash": dataGroupHash.computedHash,
+      "match": dataGroupHash.match
+    ]
+  }
+  func encodeByteArrayToHexString(_ byteArray: [UInt8]) -> String {
+    return byteArray.map { String(format: "%02x", $0) }.joined()
+  }
+  func encodeErrors(_ errors: [Error]) -> [String] {
+    return errors.map { $0.localizedDescription }
+  }
+  func serializeSignature(from sod: SOD) -> String? {
+    do {
+      let signature = try sod.getSignature()
+      return signature.base64EncodedString()
+    } catch {
+      print("Error extracting signature: \(error)")
+      return nil
+    }
+  }
+}
+
+// Helper function to map the keys of a dictionary
+extension Dictionary {
+    func mapKeys<T: Hashable>(_ transform: (Key) -> T) -> Dictionary<T, Value> {
+        Dictionary<T, Value>(uniqueKeysWithValues: map { (transform($0.key), $0.value) })
+    }
 }

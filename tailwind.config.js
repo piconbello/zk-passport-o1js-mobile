@@ -172,7 +172,7 @@ module.exports = {
       fontFamily: {
         heading: undefined,
         body: undefined,
-        mono: undefined,
+        mono: ['SpaceMono'],
         roboto: ['Roboto', 'sans-serif'],
       },
       fontWeight: {

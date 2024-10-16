@@ -26,7 +26,9 @@
     - [] Create a node.js process
     - [] Announce bonjour service
     - [] Start a socket io server
-
+- [] Document how to re-create `masterList.pem` in the future for certificate validation.
+    - [x] `masterList.pem` extracted from `icaopkd-002-complete-000284.ldif` is added to `assets/`
+        Run `cd assets/ && python3 ../modules/custom-ios-passport-reader/io/NFCPassportReader/scripts/extract.py /path/to/icaopkd-002-complete-000284.ldif` to generate.
 
 # Notes
 Heavily inspired by [zk-passport](https://github.com/zk-passport/openpassport) project.
