@@ -1,3 +1,0 @@
-[submodule "modules/custom-ios-passport-reader/ios/NFCPassportReader"]
-	path = modules/custom-ios-passport-reader/ios/NFCPassportReader
-	url = git@github.com:corupta/NFCPassportReader.git

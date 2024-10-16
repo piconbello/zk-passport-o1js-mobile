@@ -15,7 +15,7 @@ import { PassportData } from './src/CustomIosPassportReader.types';
  *
  * @returns A string representing the calculated MRZ key.
  */
-export function getMRZKey(passportNumber: string, dateOfBirth: string, dateOfExpiry: string): String {
+export function getMRZKey(passportNumber: string, dateOfBirth: string, dateOfExpiry: string): string {
   return CustomIosPassportReaderModule.getMRZKey(passportNumber, dateOfBirth, dateOfExpiry);
 }
 
@@ -26,7 +26,7 @@ export function getMRZKey(passportNumber: string, dateOfBirth: string, dateOfExp
  * 
  * @returns A Promise that resolves to the extracted passport data as a PassportData object.
  * */
-export async function scanPassport(mrzKey: String): Promise<PassportData> {
+export async function scanPassport(mrzKey: string): Promise<PassportData> {
   return await CustomIosPassportReaderModule.scanPassport(mrzKey);
 }
 
