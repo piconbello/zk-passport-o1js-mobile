@@ -1,14 +1,17 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import "@/global.css";
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/components/useColorScheme';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ThemeProvider } from '@react-navigation/native';
+import { Provider } from '@ant-design/react-native';
+import enUS from '@ant-design/react-native/lib/locale-provider/en_US'
+import * as Haptics from 'expo-haptics'
+
+import { useDeviceContext } from 'twrnc';
+import tw from '@/tw';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -18,6 +21,7 @@ export {
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
+
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -26,6 +30,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    antoutline: require('@ant-design/icons-react-native/fonts/antoutline.ttf'),
     ...FontAwesome.font,
   });
 
@@ -45,19 +50,24 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{flex: 1 }}>
-      <RootLayoutNav />
-    </GestureHandlerRootView>
+    <RootLayoutNav />
   )
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  useDeviceContext(tw); 
+
+  const handleHaptics = useCallback(
+    () => Haptics.impactAsync(
+      Haptics.ImpactFeedbackStyle.Light
+    ), []);
 
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-    </Stack>
+    <Provider onHaptics={handleHaptics} locale={enUS}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+      </Stack>
+    </Provider>
   );
 }

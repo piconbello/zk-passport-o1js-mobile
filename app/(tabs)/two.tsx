@@ -2,7 +2,6 @@ import { StyleSheet, TextInput } from 'react-native';
 
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
-import { Input, InputField } from '@/components/ui/input';
 
 export default function TabTwoScreen() {
   return (

@@ -5,6 +5,7 @@
 - [] Implement NFC Scanner
     - [x] Implement for IOS
     - [] Implement for Android
+    - [] Allow active authentication
 - [] Implement MRZ Scanner
 - [] Implement Async Storage
 - [] Implement Encrypted Storage
