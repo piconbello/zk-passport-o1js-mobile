@@ -44,3 +44,7 @@ expo-env.d.ts
 # Wild Idea but we generate them with expo prebuild --clean
 ios/
 android/
+
+# Lock Files
+yarn.lock
+package-lock.json
