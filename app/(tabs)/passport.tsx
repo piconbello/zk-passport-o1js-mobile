@@ -1,72 +1,143 @@
 import NfcManager from 'react-native-nfc-manager';
 import * as Clipboard from 'expo-clipboard';
 
-import { Button, ButtonText, ButtonSpinner, ButtonIcon } from '@/components/ui/button';
-import { InputIcon, InputSlot, Input, InputField } from '@/components/ui/input';
-import { FormControl, FormControlLabel, FormControlLabelText, FormControlHelper, FormControlHelperText, FormControlError, FormControlErrorIcon, FormControlErrorText } from '@/components/ui/form-control';
-import { Accordion, AccordionHeader, AccordionIcon, AccordionItem, AccordionTitleText, AccordionTrigger, AccordionContent, AccordionContentText } from "@/components/ui/accordion";
-import { Divider } from "@/components/ui/divider";
-import { AlertCircleIcon, ChevronDownIcon, ChevronUpIcon } from "@/components/ui/icon";
-import { SmartphoneNfcIcon, ClipboardCopyIcon } from "lucide-react-native";
-
-import { Table, TableBody, TableHead, TableHeader, TableRow, TableData } from "@/components/ui/table";
-import { VStack } from "@/components/ui/vstack";
 import { PassportData, getMRZKey, scanPassport } from "@/modules/custom-ios-passport-reader";
 import React, { useCallback, useEffect, useState } from "react";
-import { Fab, FabIcon, FabLabel } from '@/components/ui/fab';
-import { Toast, ToastDescription, ToastTitle, useToast } from '@/components/ui/toast';
-import { ScrollView } from 'react-native-gesture-handler';
 
-const _initialMRZData = {
+import tw from '@/tw';
+import { ScrollView, TextInput } from 'react-native';
+import { Button, Collapse, DatePicker, Form, Input, List, Tag, Toast, WingBlank } from '@ant-design/react-native';
+import dayjs from 'dayjs';
+
+
+type MRZDataType = {
+  documentNumber: string;
+  dateOfBirth: string;
+  dateOfExpiry: string;
+}
+const _initialMRZData: MRZDataType = {
   documentNumber: '',
   dateOfBirth: '',
   dateOfExpiry: ''
 };
-const MRZDataRegex = {
-  documentNumber: /^[A-Z0-9]{9}$/,
-  dateOfBirth: /^[0-9]{2}(?:10|11|12|0[1-9])[0-3][1-9]/,
-  // YYMMDD format,
-  dateOfExpiry: /^[0-9]{2}(?:10|11|12|0[1-9])[0-3][1-9]/
-};
-const _initialInvalid = {
-  documentNumber: false,
-  dateOfBirth: false,
-  dateOfExpiry: false
-};
+type MRZFormProps = { setMRZKey: (mrzKey: string) => void };
+function MRZForm({ setMRZKey }: MRZFormProps) {
+  const [form] = Form.useForm<MRZDataType>();
 
-function ExportButton({ mrzKey, scannedData, openPassportData }:{mrzKey:any,scannedData:any,openPassportData:any}) {
-  
-  const toast = useToast();
+  const handleFinish = useCallback((values: MRZDataType) => setMRZKey(
+    '' // getMRZKey(values.documentNumber, values.dateOfBirth, values.dateOfExpiry)
+  ), []);
 
-  const handlePress = useCallback(() => {
-    const str = JSON.stringify({ mrzKey, scannedData, openPassportData }, null, 2);
-    Clipboard.setStringAsync(str)
-      .then(() => ({ action: 'success', message: "All data copied to clipboard", title: 'Success' }))
-      .catch(e => ({ action: 'error', message: e.message || "Failed to copy to clipboard", title: 'Failed' }))
-      .then((res) => toast.show({
-        render: ({ id }) => (
-          <Toast nativeID={`toast-${id}`} action={res.action as 'success' | 'error'} variant="outline">
-            <ToastTitle>{res.title}</ToastTitle>
-            <ToastDescription>
-              {res.message}
-            </ToastDescription>
-          </Toast>
-        )
-      }));
-  }, [mrzKey, scannedData, openPassportData]);
+  const normalizeDocumentNumber = useCallback((value: string) => {
+    return value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  }, []);
 
   return (
-    <Fab size="sm" placement="bottom left" onPress={handlePress}>
-      <FabIcon as={ClipboardCopyIcon} />
-      <FabLabel>Copy All to Clipboard</FabLabel>
-    </Fab>
-  )
+    <Form 
+      form={form}
+      name="mrzForm"
+      initialValues={_initialMRZData}
+      onFinish={handleFinish}
+    >
+      {/* <Form.Item<MRZDataType>
+        name="documentNumber"
+        label="Document Number"
+        rules={[
+          { required: true, message: 'Please input your document number!' },
+          { pattern: /^[A-Z0-9]{9}$/, message: 'Invalid document number' }
+        ]}
+        help="First 9 characters of the passport number"
+        normalize={normalizeDocumentNumber}
+      >
+        <Input
+          type='text'
+          // maxLength={9}
+          placeholder="X12345678"
+        />
+      </Form.Item> */}
+      <Form.Item<MRZDataType>
+        name="dateOfBirth"
+        label="Date of Birth"
+        rules={[
+          { required: true, message: 'Please input your date of birth!' },
+          { pattern: /^[0-9]{2}(?:10|11|12|0[1-9])[0-3][1-9]$/, message: 'Invalid date of birth' }
+        ]}
+      >
+        <DatePicker 
+          mode="date" 
+          format="YYMMDD" 
+          minDate={new Date(1900, 0, 1)}
+          maxDate={new Date()}
+        />
+      </Form.Item>
+      <Form.Item<MRZDataType>
+        name="dateOfExpiry"
+        label="Date of Expiry"
+        rules={[
+          { required: true, message: 'Please input your date of expiry!' },
+          { pattern: /^[0-9]{2}(?:10|11|12|0[1-9])[0-3][1-9]$/, message: 'Invalid date of expiry' }
+        ]}
+      >
+        <DatePicker 
+          mode="date" 
+          format="YYMMDD" 
+          minDate={dayjs().subtract(20, 'year').startOf('day').toDate()}
+          maxDate={dayjs().add(10, 'year').startOf('day').toDate()}
+        />
+      </Form.Item>
+
+      <Form.Item>
+        <Button type="primary" onPress={() => form.submit()}>
+          Calculate MRZ Key
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 }
 
-function ScanButton({ mrzKey, handlePassportScanned }: { mrzKey?: string, handlePassportScanned: (any)=>void}) {
+type ScannedDataListProps = { scannedDataList: [string, string][] };
+function ScannedDataList({ scannedDataList }: ScannedDataListProps) {
+  return (
+    <List>
+      {scannedDataList.map(([key, value]) => (
+        <List.Item key={key} wrap
+          thumb={<Tag small style={tw`font-bold`}>{key}</Tag>}
+        >
+          {value}
+        </List.Item>
+      ))}
+    </List>
+  );
+}
+
+
+type ExportButtonProps = { mrzKey: string, scannedDataList: [string, string][], openPassportData: any };
+function ExportButton({ mrzKey, scannedDataList, openPassportData }: ExportButtonProps) {
+  const handleExport = useCallback(() => {
+    const jsonString = JSON.stringify(openPassportData, null, 2);
+    Clipboard.setStringAsync(jsonString)
+      .then(() => {
+        Toast.success({ content: 'All data copied to clipboard' });
+      }).catch((e) => {
+        Toast.fail({ content: `Failed to copy to clipboard: ${e.message}` });
+        console.log(e);
+      })
+  }, [mrzKey, scannedDataList, openPassportData]);
+
+  return (
+    <Button type="ghost" onPress={handleExport}
+      style={tw`absolute left-4 bottom-2 rounded-full`}
+    >
+      Copy All
+    </Button>
+  );
+}
+
+
+type ScanButtonProps = { mrzKey: string, onPassportScanned: (data: any)=>void };
+function ScanButton({ mrzKey, onPassportScanned }: ScanButtonProps) {
   const [nfcSupported, setNFCSupported] = useState<boolean | undefined>();
   const [nfcEnabled, setNFCEnabled] = useState<boolean | undefined>();
-  const toast = useToast();
 
   useEffect(() => {
     NfcManager.isSupported()
@@ -81,264 +152,68 @@ function ScanButton({ mrzKey, handlePassportScanned }: { mrzKey?: string, handle
      .catch(() => setNFCEnabled(false));
   }, [nfcSupported]);
 
-  console.log({ nfcEnabled, nfcSupported, mrzKey })
   const handlePress = useCallback(() => {
     if (!mrzKey) return;
     console.log('Scanning passport NFC...');
     scanPassport(mrzKey)
-      .then(handlePassportScanned)
-      .catch(error => {
-        toast.show({
-          render: ({ id }) => (
-            <Toast nativeID={`toast-${id}`} action="error" variant="solid">
-              <ToastTitle>{error.code || "Failed"}</ToastTitle>
-              <ToastDescription>
-                {error.message || "Failed to scan passport"}
-              </ToastDescription>
-            </Toast>
-          )
-        })
-      })
-  }, [mrzKey, handlePassportScanned]);
+      .then(onPassportScanned)
+      .catch(e => {
+        Toast.fail({ content: `Failed to scan passport: ${e.message}` });
+        console.log(e);
+      });
+  }, [mrzKey, onPassportScanned]);
 
   const isDisabled = !nfcEnabled || !mrzKey;
+
   return (
-    <Fab size="sm" placement="bottom right" 
-      isDisabled={isDisabled} onPress={handlePress}
-      className={isDisabled ? 'opacity-60' : '' }
+    <Button type="primary" onPress={handlePress}
+      disabled={isDisabled}
+      style={tw`absolute right-4 bottom-2 rounded-full`}
     >
-      <FabIcon as={SmartphoneNfcIcon} />
-      <FabLabel>
-        {
-          nfcSupported === false ? 'NFC not supported' 
-            : nfcEnabled === false? 'NFC not enabled' 
-            : 'Scan Passport NFC'
-        }
-      </FabLabel>
-    </Fab>
-  )
-}
-
-function MRZForm({
-  setMRZKey
-}: {
-  setMRZKey: (mrzKey: string) => void;
-}) {
-  const [mrzData, setMRZData] = React.useState(_initialMRZData);
-  const [invalid, setInvalid] = React.useState(_initialInvalid);
-  const mrzDataChangeHandler = useCallback((key: string) => (e: any) => {
-    setMRZData(prevMRZData => ({
-      ...prevMRZData,
-      [key]: e.nativeEvent.text
-    }));
-  }, [setMRZData]);
-  const handleSubmit = useCallback(() => {
-    let nextInvalid = {
-      ..._initialInvalid
-    };
-    nextInvalid.documentNumber = !MRZDataRegex.documentNumber.test(mrzData.documentNumber);
-    nextInvalid.dateOfBirth = !MRZDataRegex.dateOfBirth.test(mrzData.dateOfBirth);
-    nextInvalid.dateOfExpiry = !MRZDataRegex.dateOfExpiry.test(mrzData.dateOfExpiry);
-    setInvalid(nextInvalid);
-    if (!Object.values(nextInvalid).some(Boolean)) {
-      setMRZKey(getMRZKey(mrzData.documentNumber, mrzData.dateOfBirth, mrzData.dateOfExpiry));
-    }
-  }, [mrzData, setMRZKey, setInvalid]);
-  // Create a form to input document number, date of birth, and expiration date
-
-  return <VStack className="w-full" space="lg">
-    <FormControl isInvalid={invalid.documentNumber} size={"lg"} isRequired>
-      <FormControlLabel>
-        <FormControlLabelText>Passport Number</FormControlLabelText>
-      </FormControlLabel>
-
-      <Input size={"xl"} variant={"outline"} isInvalid={invalid.documentNumber} isRequired className='w-full'>
-        <InputField onChange={mrzDataChangeHandler('documentNumber')} value={mrzData.documentNumber} placeholder="XX123456" />
-      </Input>
-
-      <FormControlHelper>
-        <FormControlHelperText>
-          First 9 characters of the passport number. (Pad?)
-        </FormControlHelperText>
-      </FormControlHelper>
-
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircleIcon} />
-        <FormControlErrorText>
-          Must be 9 uppercase characters letters and numbers.
-        </FormControlErrorText>
-      </FormControlError>
-    </FormControl>
-
-    <FormControl isInvalid={invalid.dateOfBirth} size={"lg"} isRequired>
-      <FormControlLabel>
-        <FormControlLabelText>Date of Birth</FormControlLabelText>
-      </FormControlLabel>
-
-      <Input size={"xl"} variant={"outline"} isInvalid={invalid.dateOfBirth} isRequired>
-        <InputField onChange={mrzDataChangeHandler('dateOfBirth')} value={mrzData.dateOfBirth} placeholder="YYMMDD" />
-      </Input>
-
-      <FormControlHelper>
-        <FormControlHelperText>
-          Instead of 1990/01/13 write 900113.
-        </FormControlHelperText>
-      </FormControlHelper>
-
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircleIcon} />
-        <FormControlErrorText>
-          Must be 6 digits in YYMMDD format.
-        </FormControlErrorText>
-      </FormControlError>
-    </FormControl>
-
-    <FormControl isInvalid={invalid.dateOfExpiry} size={"lg"} isRequired>
-      <FormControlLabel>
-        <FormControlLabelText>Date of Expiry</FormControlLabelText>
-      </FormControlLabel>
-
-      <Input size={"xl"} variant={"outline"} isInvalid={invalid.dateOfExpiry} isRequired>
-        <InputField onChange={mrzDataChangeHandler('dateOfExpiry')} value={mrzData.dateOfExpiry} placeholder="YYMMDD" />
-      </Input>
-
-      <FormControlHelper>
-        <FormControlHelperText>
-          Instead of 2030/01/13 write 300113.
-        </FormControlHelperText>
-      </FormControlHelper>
-
-      <FormControlError>
-        <FormControlErrorIcon as={AlertCircleIcon} />
-        <FormControlErrorText>
-          Must be 6 digits in YYMMDD format.
-        </FormControlErrorText>
-      </FormControlError>
-    </FormControl>
-
-    <Button action={"primary"} variant={"solid"} size={"xl"} isDisabled={false} onPress={handleSubmit}>
-      <ButtonText>Calculate MRZ Key</ButtonText>
+      {
+        nfcSupported === false ? 'No NFC' 
+          : nfcEnabled === false? 'NFC Unabled' 
+          : 'Scan Passport NFC'
+      }
     </Button>
-  </VStack>;
+  );
 }
-function ScannedDataList({
-  scannedData
-}: {
-  scannedData: [string, string][];
-}) {
-  return <Table className="w-full">
-    <TableHeader>
-      <TableRow>
-        <TableHead>DG</TableHead>
-        <TableHead>Data</TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {scannedData.map(([dg, data]) => <TableRow key={dg}>
-        <TableData>{dg}</TableData>
-        <TableData>{data}</TableData>
-      </TableRow>)}
-    </TableBody>
-  </Table>;
-}
-function OpenPassportData({
-  openPassportData
-}: {
-  openPassportData: any;
-}) {
-  return <AccordionContentText className='font-mono'>
-    {JSON.stringify(openPassportData, null, 2)}
-  </AccordionContentText>;
-}
-const _defaultAccordionItem = ['mrz'];
 export default function TabPassportScan() {
   const [mrzKey, setMRZKey] = useState("");
-  const [scannedData, setScannedData] = useState<[string, string][]>([]);
+  const [scannedDataList, setScannedDataList] = useState<[string, string][]>([]);
   const [openPassportData, setopenPassportData] = useState<any>(null);
   const handlePassportScanned = useCallback(async ({
     openpassport,
-    ...nextScannedData
+    ...nextScannedDataList
   }: PassportData) => {
-    setScannedData(Object.entries(nextScannedData).sort(([a], [b]) => a.localeCompare(b)));
+    setScannedDataList(Object.entries(nextScannedDataList).sort(([a], [b]) => a.localeCompare(b)));
     try {
       const nextopenPassportData = JSON.parse(openpassport);
       setopenPassportData(nextopenPassportData);
     } catch (err) {
       console.log(err);
     }
-  }, [setScannedData, setopenPassportData]);
+  }, [setScannedDataList, setopenPassportData]);
   return (
     <>
+      {/* <TextInput style={tw`border-r-4 p-4`} /> */}
+      {/* <Input /> */}
       <ScrollView>
-        <Accordion size="lg" variant="filled" type="single" isCollapsible defaultValue={_defaultAccordionItem}>
-          <AccordionItem value="mrz">
-            <AccordionHeader>
-              <AccordionTrigger>
-                {({
-                  isExpanded
-                }) => <>
-                    <AccordionTitleText>
-                      MRZ Key: {mrzKey}
-                    </AccordionTitleText>
-                    <AccordionIcon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} className="ml-3" />
-                  </>}
-              </AccordionTrigger>
-            </AccordionHeader>
-            <AccordionContent>
-              <MRZForm setMRZKey={setMRZKey} />
-            </AccordionContent>
-          </AccordionItem>
-
-          <Divider />
-
-          <AccordionItem value="scannedData" isDisabled={!scannedData}>
-            <AccordionHeader>
-              <AccordionTrigger>
-                {({
-                  isExpanded
-                }) => <>
-                    <AccordionTitleText>
-                      ScannedData: {scannedData.map(a => a[0]).join(', ')}
-                    </AccordionTitleText>
-                    <AccordionIcon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} className="ml-3" />
-                  </>}
-              </AccordionTrigger>
-            </AccordionHeader>
-            <AccordionContent>
-              <ScannedDataList scannedData={scannedData} />
-            </AccordionContent>
-          </AccordionItem>
-
-          <Divider />
-
-          <AccordionItem value="openpassport" isDisabled={!scannedData}>
-            <AccordionHeader>
-              <AccordionTrigger>
-                {({
-                  isExpanded
-                }) => <>
-                    <AccordionTitleText>
-                      openpassport formatted data
-                    </AccordionTitleText>
-                    <AccordionIcon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} className="ml-3" />
-                  </>}
-              </AccordionTrigger>
-            </AccordionHeader>
-            <AccordionContent>
-              <OpenPassportData openPassportData={openPassportData} />
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        <Collapse defaultActiveKey={'mrz'} accordion>
+          <Collapse.Panel key="mrz" title={`MRZ Key: ${mrzKey}`} >
+            <MRZForm setMRZKey={setMRZKey} />
+          </Collapse.Panel>
+          <Collapse.Panel key="scannedData" title={`Scanned Data: ${scannedDataList.join(', ')}`}>
+            <ScannedDataList scannedDataList={scannedDataList} />
+          </Collapse.Panel>
+          <Collapse.Panel key="openPassportData" title="Open Passport Formatted Data"
+            styles={{ Content: tw`font-mono`}}>
+            {JSON.stringify(openPassportData, null, 2)}
+          </Collapse.Panel>
+        </Collapse>
       </ScrollView>
-      <ScanButton 
-        mrzKey={mrzKey}
-        handlePassportScanned={handlePassportScanned} 
-      />
-      <ExportButton 
-        mrzKey={mrzKey}
-        openPassportData={openPassportData}
-        scannedData={scannedData}
-      />
+      <ScanButton mrzKey={mrzKey} onPassportScanned={handlePassportScanned} />
+      <ExportButton mrzKey={mrzKey} scannedDataList={scannedDataList} openPassportData={openPassportData} />
     </>
-  );
+  )
 }
