@@ -6,6 +6,7 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "generateCSCAMasterList": "python3 modules/custom-ios-passport-reader/ios/NFCPassportReader/scripts/extract.py",
     "web": "DARK_MODE=media expo start --web",
     "test": "jest --watchAll"
   },
@@ -85,18 +86,6 @@
   },
   "private": true,
   "expo": {
-    "plugins": [
-      "react-native-nfc-manager",
-      {
-        "nfcPermission": "Custom permission message",
-        "selectIdentifiers": [
-          "A0000002471001",
-          "A0000002472001",
-          "D2760000850101",
-          "D2760000850100"
-        ]
-      }
-    ],
     "install": {
       "exclude": [
         "react-native@~0.74.0",

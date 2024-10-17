@@ -33,7 +33,18 @@
     },
     "plugins": [
       "expo-router",
-      "react-native-nfc-manager",
+      [
+        "react-native-nfc-manager",
+        {
+          "nfcPermission": "Custom permission message",
+          "selectIdentifiers": [
+            "A0000002471001",
+            "A0000002472001",
+            "D2760000850101",
+            "D2760000850100"
+          ]
+        }
+      ],
       [
         "expo-build-properties",
         {
@@ -42,7 +53,7 @@
           }
         }
       ],
-      "./withMasterList"
+      "./withCSCAMasterList"
     ],
     "experiments": {
       "typedRoutes": true

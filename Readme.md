@@ -3,6 +3,8 @@
 # TODO
 - [] Write Readme
 - [] Implement NFC Scanner
+    - [x] Implement for IOS
+    - [] Implement for Android
 - [] Implement MRZ Scanner
 - [] Implement Async Storage
 - [] Implement Encrypted Storage
@@ -27,8 +29,8 @@
     - [] Announce bonjour service
     - [] Start a socket io server
 - [] Document how to re-create `masterList.pem` in the future for certificate validation.
-    - [x] `masterList.pem` extracted from `icaopkd-002-complete-000284.ldif` is added to `assets/`
-        Run `cd assets/ && python3 ../modules/custom-ios-passport-reader/io/NFCPassportReader/scripts/extract.py /path/to/icaopkd-002-complete-000284.ldif` to generate.
+    - [x] Tested `masterList.pem` extracted from `icaopkd-002-complete-000284.ldif`
+        Change folder to project root. Run `yarn generateCSCAMasterList /path/to/icaopkd-002-complete-000284.ldif` to generate.
 
 # Notes
 Heavily inspired by [zk-passport](https://github.com/zk-passport/openpassport) project.
@@ -38,6 +40,9 @@ Heavily inspired by [zk-passport](https://github.com/zk-passport/openpassport) p
 
 #### expo
 Main react native modules, package, bundle manager, etc.
+
+For now ios and android folder is not sent to git.
+Instead they are generated via expo `npx expo prebuild --clean` and those files are modified programmatically via expo plugins and mods.
 
 #### gluestack-v2
 Awesome UI Library, something like a hybrid of nativewind (tailwind) and nativebase

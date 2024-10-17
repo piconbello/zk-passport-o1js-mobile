@@ -15,6 +15,8 @@ import { PassportData, getMRZKey, scanPassport } from "@/modules/custom-ios-pass
 import React, { useCallback, useEffect, useState } from "react";
 import { Fab, FabIcon, FabLabel } from '@/components/ui/fab';
 import { Toast, ToastDescription, ToastTitle, useToast } from '@/components/ui/toast';
+import { ScrollView } from 'react-native-gesture-handler';
+
 const _initialMRZData = {
   documentNumber: '',
   dateOfBirth: '',
@@ -99,8 +101,12 @@ function ScanButton({ mrzKey, handlePassportScanned }: { mrzKey?: string, handle
       })
   }, [mrzKey, handlePassportScanned]);
 
+  const isDisabled = !nfcEnabled || !mrzKey;
   return (
-    <Fab size="sm" placement="bottom right" isDisabled={!nfcEnabled || !mrzKey} onPress={handlePress}>
+    <Fab size="sm" placement="bottom right" 
+      isDisabled={isDisabled} onPress={handlePress}
+      className={isDisabled ? 'opacity-60' : '' }
+    >
       <FabIcon as={SmartphoneNfcIcon} />
       <FabLabel>
         {
@@ -263,65 +269,67 @@ export default function TabPassportScan() {
   }, [setScannedData, setopenPassportData]);
   return (
     <>
-      <Accordion size="lg" variant="filled" type="single" isCollapsible defaultValue={_defaultAccordionItem}>
-        <AccordionItem value="mrz">
-          <AccordionHeader>
-            <AccordionTrigger>
-              {({
-                isExpanded
-              }) => <>
-                  <AccordionTitleText>
-                    MRZ Key: {mrzKey}
-                  </AccordionTitleText>
-                  <AccordionIcon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} className="ml-3" />
-                </>}
-            </AccordionTrigger>
-          </AccordionHeader>
-          <AccordionContent>
-            <MRZForm setMRZKey={setMRZKey} />
-          </AccordionContent>
-        </AccordionItem>
+      <ScrollView>
+        <Accordion size="lg" variant="filled" type="single" isCollapsible defaultValue={_defaultAccordionItem}>
+          <AccordionItem value="mrz">
+            <AccordionHeader>
+              <AccordionTrigger>
+                {({
+                  isExpanded
+                }) => <>
+                    <AccordionTitleText>
+                      MRZ Key: {mrzKey}
+                    </AccordionTitleText>
+                    <AccordionIcon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} className="ml-3" />
+                  </>}
+              </AccordionTrigger>
+            </AccordionHeader>
+            <AccordionContent>
+              <MRZForm setMRZKey={setMRZKey} />
+            </AccordionContent>
+          </AccordionItem>
 
-        <Divider />
+          <Divider />
 
-        <AccordionItem value="scannedData" isDisabled={!scannedData}>
-          <AccordionHeader>
-            <AccordionTrigger>
-              {({
-                isExpanded
-              }) => <>
-                  <AccordionTitleText>
-                    ScannedData: {scannedData.map(a => a[0]).join(', ')}
-                  </AccordionTitleText>
-                  <AccordionIcon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} className="ml-3" />
-                </>}
-            </AccordionTrigger>
-          </AccordionHeader>
-          <AccordionContent>
-            <ScannedDataList scannedData={scannedData} />
-          </AccordionContent>
-        </AccordionItem>
+          <AccordionItem value="scannedData" isDisabled={!scannedData}>
+            <AccordionHeader>
+              <AccordionTrigger>
+                {({
+                  isExpanded
+                }) => <>
+                    <AccordionTitleText>
+                      ScannedData: {scannedData.map(a => a[0]).join(', ')}
+                    </AccordionTitleText>
+                    <AccordionIcon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} className="ml-3" />
+                  </>}
+              </AccordionTrigger>
+            </AccordionHeader>
+            <AccordionContent>
+              <ScannedDataList scannedData={scannedData} />
+            </AccordionContent>
+          </AccordionItem>
 
-        <Divider />
+          <Divider />
 
-        <AccordionItem value="openpassport" isDisabled={!scannedData}>
-          <AccordionHeader>
-            <AccordionTrigger>
-              {({
-                isExpanded
-              }) => <>
-                  <AccordionTitleText>
-                    openpassport formatted data
-                  </AccordionTitleText>
-                  <AccordionIcon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} className="ml-3" />
-                </>}
-            </AccordionTrigger>
-          </AccordionHeader>
-          <AccordionContent>
-            <OpenPassportData openPassportData={openPassportData} />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+          <AccordionItem value="openpassport" isDisabled={!scannedData}>
+            <AccordionHeader>
+              <AccordionTrigger>
+                {({
+                  isExpanded
+                }) => <>
+                    <AccordionTitleText>
+                      openpassport formatted data
+                    </AccordionTitleText>
+                    <AccordionIcon as={isExpanded ? ChevronUpIcon : ChevronDownIcon} className="ml-3" />
+                  </>}
+              </AccordionTrigger>
+            </AccordionHeader>
+            <AccordionContent>
+              <OpenPassportData openPassportData={openPassportData} />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </ScrollView>
       <ScanButton 
         mrzKey={mrzKey}
         handlePassportScanned={handlePassportScanned} 

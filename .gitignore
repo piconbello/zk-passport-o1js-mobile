@@ -39,3 +39,8 @@ yarn-error.*
 
 expo-env.d.ts
 # @end expo-cli
+
+
+# Wild Idea but we generate them with expo prebuild --clean
+ios/
+android/
