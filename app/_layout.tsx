@@ -8,8 +8,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { Provider } from '@ant-design/react-native';
-import enUS from '@ant-design/react-native/lib/locale-provider/en_US'
 import * as Haptics from 'expo-haptics'
 
 import { useDeviceContext } from 'twrnc';
@@ -33,7 +31,6 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    antoutline: require('@ant-design/icons-react-native/fonts/antoutline.ttf'),
     ...FontAwesome.font,
   });
 
@@ -60,19 +57,12 @@ export default function RootLayout() {
 function RootLayoutNav() {
   useDeviceContext(tw); 
 
-  const handleHaptics = useCallback(
-    () => Haptics.impactAsync(
-      Haptics.ImpactFeedbackStyle.Light
-    ), []);
-
   return (
     <GestureHandlerRootView style={tw`flex-1`}>
-      <Provider onHaptics={handleHaptics} locale={enUS}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
-      </Provider>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+      </Stack>
     </GestureHandlerRootView>
   );
 }
