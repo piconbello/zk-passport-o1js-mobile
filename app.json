@@ -53,7 +53,8 @@
           }
         }
       ],
-      "./withCSCAMasterList"
+      "./withCSCAMasterList",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

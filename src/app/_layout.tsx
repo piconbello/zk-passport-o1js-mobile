@@ -1,4 +1,6 @@
 import '@/patches';
+import '@/helpers';
+import '@/components/tcombNative/index';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { ThemeProvider } from '@react-navigation/native';
@@ -16,6 +18,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { useColorScheme } from 'react-native';
 import Themes from '@/constants/Themes';
+import { ToastProvider } from 'react-native-paper-toast';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -28,12 +31,16 @@ export const unstable_settings = {
 
 };
 
+
+import { enGB, registerTranslation } from 'react-native-paper-dates';
+registerTranslation('en-GB', enGB);
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
   });
 
@@ -67,10 +74,12 @@ function RootLayoutNav() {
     <GestureHandlerRootView>
       <PaperProvider theme={theme}>
         <ThemeProvider value={theme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-          </Stack>
+          <ToastProvider>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            </Stack>
+          </ToastProvider>
         </ThemeProvider>
       </PaperProvider>
     </GestureHandlerRootView>

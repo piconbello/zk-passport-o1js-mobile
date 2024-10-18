@@ -37,6 +37,10 @@
 Heavily inspired by [zk-passport](https://github.com/zk-passport/openpassport) project.
 
 
+# Random TODO
+- [] Remove all moment and replace them with luxon
+- [] Add timezone support.
+
 # Used Toolchains
 
 #### expo

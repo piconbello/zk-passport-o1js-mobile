@@ -17,20 +17,20 @@ const {
 });
 
 const LightTheme = {
-  ...MD3LightTheme,
   ...NavigationLightThemeMD3,
+  ...MD3LightTheme,
   colors: {
+    ...NavigationLightThemeMD3.colors,
     ...MD3LightTheme.colors,
-    ...NavigationDarkThemeMD3.colors,
     // Add custom colors here
   },
 };
 const DarkTheme = {
-  ...MD3DarkTheme,
   ...NavigationDarkThemeMD3,
+  ...MD3DarkTheme,
   colors: {
-    ...MD3DarkTheme.colors,
     ...NavigationDarkThemeMD3.colors,
+    ...MD3DarkTheme.colors,
     // Add custom colors here
   },
 };
