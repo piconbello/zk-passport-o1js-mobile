@@ -1,3 +1,5 @@
+import '@/patches';
+
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -12,6 +14,7 @@ import * as Haptics from 'expo-haptics'
 
 import { useDeviceContext } from 'twrnc';
 import tw from '@/tw';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -63,11 +66,13 @@ function RootLayoutNav() {
     ), []);
 
   return (
-    <Provider onHaptics={handleHaptics} locale={enUS}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </Provider>
+    <GestureHandlerRootView style={tw`flex-1`}>
+      <Provider onHaptics={handleHaptics} locale={enUS}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      </Provider>
+    </GestureHandlerRootView>
   );
 }

@@ -2,30 +2,35 @@ import NfcManager from 'react-native-nfc-manager';
 import * as Clipboard from 'expo-clipboard';
 
 import { PassportData, getMRZKey, scanPassport } from "@/modules/custom-ios-passport-reader";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import tw from '@/tw';
 import { ScrollView, TextInput } from 'react-native';
-import { Button, Collapse, DatePicker, Form, Input, List, Tag, Toast, WingBlank } from '@ant-design/react-native';
+import { Button, Collapse, DatePicker, Form, Input, List, Tag, Toast, View, WingBlank } from '@ant-design/react-native';
 import dayjs from 'dayjs';
+import DatePickerInput from '@/components/DatePickerInput';
 
 
 type MRZDataType = {
   documentNumber: string;
-  dateOfBirth: string;
-  dateOfExpiry: string;
+  dateOfBirth?: Date;
+  dateOfExpiry?: Date;
 }
-const _initialMRZData: MRZDataType = {
-  documentNumber: '',
-  dateOfBirth: '',
-  dateOfExpiry: ''
-};
+const normalizers = {
+  documentNumber: (s) => s.toUpperCase().replace(/[^A-Z0-9]/g, ''),
+  // dateOfBirth: (s) => dayjs(s, 'YYYY-MM-DD', true).isValid()? dayjs(s, 'YYYY-MM-DD').format('YYYYMMDD') : '',
+  // dateOfExpiry: (s) => s.replace(/[^0-9]/g, '')
+}
 type MRZFormProps = { setMRZKey: (mrzKey: string) => void };
 function MRZForm({ setMRZKey }: MRZFormProps) {
   const [form] = Form.useForm<MRZDataType>();
 
   const handleFinish = useCallback((values: MRZDataType) => setMRZKey(
-    '' // getMRZKey(values.documentNumber, values.dateOfBirth, values.dateOfExpiry)
+    getMRZKey(
+      values.documentNumber, 
+      dayjs(values.dateOfBirth).format('YYMMDD'), 
+      dayjs(values.dateOfExpiry).format('YYMMDD')
+    )
   ), []);
 
   const normalizeDocumentNumber = useCallback((value: string) => {
@@ -36,54 +41,55 @@ function MRZForm({ setMRZKey }: MRZFormProps) {
     <Form 
       form={form}
       name="mrzForm"
-      initialValues={_initialMRZData}
       onFinish={handleFinish}
+      layout='horizontal'
     >
-      {/* <Form.Item<MRZDataType>
+      <Form.Item<MRZDataType>
         name="documentNumber"
         label="Document Number"
         rules={[
           { required: true, message: 'Please input your document number!' },
           { pattern: /^[A-Z0-9]{9}$/, message: 'Invalid document number' }
         ]}
-        help="First 9 characters of the passport number"
         normalize={normalizeDocumentNumber}
       >
         <Input
           type='text'
-          // maxLength={9}
+          maxLength={9}
           placeholder="X12345678"
         />
-      </Form.Item> */}
+      </Form.Item>
       <Form.Item<MRZDataType>
         name="dateOfBirth"
         label="Date of Birth"
         rules={[
           { required: true, message: 'Please input your date of birth!' },
-          { pattern: /^[0-9]{2}(?:10|11|12|0[1-9])[0-3][1-9]$/, message: 'Invalid date of birth' }
         ]}
       >
-        <DatePicker 
-          mode="date" 
-          format="YYMMDD" 
+        <DatePicker
+          precision='day'
+          format="YYYY/MM/DD" 
           minDate={new Date(1900, 0, 1)}
           maxDate={new Date()}
-        />
+        >
+          <DatePickerInput placeholder='potato' />
+        </DatePicker>
       </Form.Item>
       <Form.Item<MRZDataType>
         name="dateOfExpiry"
         label="Date of Expiry"
         rules={[
           { required: true, message: 'Please input your date of expiry!' },
-          { pattern: /^[0-9]{2}(?:10|11|12|0[1-9])[0-3][1-9]$/, message: 'Invalid date of expiry' }
         ]}
       >
         <DatePicker 
-          mode="date" 
-          format="YYMMDD" 
+          precision='day'
+          format="YYYY/MM/DD" 
           minDate={dayjs().subtract(20, 'year').startOf('day').toDate()}
           maxDate={dayjs().add(10, 'year').startOf('day').toDate()}
-        />
+        >
+          <DatePickerInput/>
+        </DatePicker>
       </Form.Item>
 
       <Form.Item>
@@ -114,7 +120,9 @@ function ScannedDataList({ scannedDataList }: ScannedDataListProps) {
 type ExportButtonProps = { mrzKey: string, scannedDataList: [string, string][], openPassportData: any };
 function ExportButton({ mrzKey, scannedDataList, openPassportData }: ExportButtonProps) {
   const handleExport = useCallback(() => {
-    const jsonString = JSON.stringify(openPassportData, null, 2);
+    const jsonString = JSON.stringify({ 
+      mrzKey, scannedDataList, openPassportData 
+    }, null, 2);
     Clipboard.setStringAsync(jsonString)
       .then(() => {
         Toast.success({ content: 'All data copied to clipboard' });
@@ -196,9 +204,7 @@ export default function TabPassportScan() {
   }, [setScannedDataList, setopenPassportData]);
   return (
     <>
-      {/* <TextInput style={tw`border-r-4 p-4`} /> */}
-      {/* <Input /> */}
-      <ScrollView>
+      <ScrollView keyboardShouldPersistTaps="handled">
         <Collapse defaultActiveKey={'mrz'} accordion>
           <Collapse.Panel key="mrz" title={`MRZ Key: ${mrzKey}`} >
             <MRZForm setMRZKey={setMRZKey} />
