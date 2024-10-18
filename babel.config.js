@@ -9,6 +9,11 @@ module.exports = function (api) {
       alias: {
         "@": "./"
       }
-    }]]
+    }]],
+    env: {
+      production: {
+        plugins: ['react-native-paper/babel'],
+      },
+    },
   };
 };

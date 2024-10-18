@@ -13,6 +13,7 @@ import * as Haptics from 'expo-haptics'
 import { useDeviceContext } from 'twrnc';
 import tw from '@/tw';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { PaperProvider } from 'react-native-paper';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -58,11 +59,13 @@ function RootLayoutNav() {
   useDeviceContext(tw); 
 
   return (
-    <GestureHandlerRootView style={tw`flex-1`}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+    <GestureHandlerRootView>
+      <PaperProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      </PaperProvider>
     </GestureHandlerRootView>
   );
 }
