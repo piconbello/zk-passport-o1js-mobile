@@ -1,7 +1,7 @@
 import '@/patches';
 
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -14,6 +14,8 @@ import { useDeviceContext } from 'twrnc';
 import tw from '@/tw';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
+import { useColorScheme } from 'react-native';
+import Themes from '@/constants/Themes';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -58,13 +60,18 @@ export default function RootLayout() {
 function RootLayoutNav() {
   useDeviceContext(tw); 
 
+  const colorScheme = useColorScheme();
+  const theme = colorScheme === 'dark' ? Themes.DarkTheme : Themes.LightTheme;
+
   return (
     <GestureHandlerRootView>
-      <PaperProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
+      <PaperProvider theme={theme}>
+        <ThemeProvider value={theme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          </Stack>
+        </ThemeProvider>
       </PaperProvider>
     </GestureHandlerRootView>
   );
