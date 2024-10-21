@@ -39,7 +39,7 @@ const formOptions = {
     dateOfExpiry: {
       mode: 'single',
       minimumDate: dayjs().subtract(10, 'year').startOf('day').toDate(),
-      maximumDate: dayjs().add(10).startOf('day').toDate(),
+      maximumDate: dayjs().add(10, 'year').startOf('day').toDate(),
     },
   }
 }
