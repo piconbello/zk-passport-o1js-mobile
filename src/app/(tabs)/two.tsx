@@ -1,10 +1,28 @@
-import { StyleSheet, View, Text } from 'react-native';
+import ContractWebView from '@/components/contractWebView';
+import { useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Text } from 'react-native-paper';
+import { WebView } from 'react-native-webview';
 
 export default function TabTwoScreen() {
+  const wRef = useRef<ContractWebView>(null);
+
+  useEffect(() => {
+    setTimeout(async () => {
+      const response = await wRef.current?.sendCommandToWebApp({
+        action: 'sampleCommand',
+        hello: 'world'
+      });
+      console.log('TabTwoScreen received response:', response);
+    }, 3000);
+  }, []);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab Two</Text>
-      <View style={styles.separator} />
+      <ContractWebView 
+        ref={wRef}
+        uri="https://corupta.net/" 
+      />
     </View>
   );
 }

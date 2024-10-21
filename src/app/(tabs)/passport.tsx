@@ -1,6 +1,8 @@
 import NfcManager from 'react-native-nfc-manager';
 import * as Clipboard from 'expo-clipboard';
 
+import { serializeError } from 'serialize-error';
+
 import { PassportData, getMRZKey, scanPassport } from "@/modules/custom-passport-reader";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
@@ -14,6 +16,7 @@ import useRefMemo from '@/hooks/useRefMemo';
 // import * as t from 'io-ts'
 import 'tcomb-form-native-cr';
 import t from 'tcomb-validation';
+import ContractWebView from '@/components/contractWebView';
 //@ts-ignore
 const Form = t.form.Form;
 
@@ -129,13 +132,13 @@ function ScannedDataGroupList({ scannedDataGroupList }: ScannedDataGroupListProp
   // );
 }
 
-type ExportButtonProps = { mrzKey: string, scannedDataGroupList: [string, string][], openPassportData: any };
-function ExportButton({ mrzKey, scannedDataGroupList, openPassportData }: ExportButtonProps) {
+type ExportButtonProps = { mrzKey: string, scannedDataGroupList: [string, string][], openPassportData: any, webViewLogs: object[] };
+function ExportButton({ mrzKey, scannedDataGroupList, openPassportData, webViewLogs }: ExportButtonProps) {
   const toaster = useToast();
 
   const handleExport = useCallback(() => {
     const jsonString = JSON.stringify({ 
-      mrzKey, scannedDataGroupList, openPassportData 
+      mrzKey, scannedDataGroupList, openPassportData, webViewLogs
     }, null, 2);
     Clipboard.setStringAsync(jsonString)
       .then(() => {
@@ -198,10 +201,63 @@ function ScanButton({ mrzKey, onPassportScanned }: ScanButtonProps) {
   );
 }
 
+type WebViewLogType = { type: string, data: object }
+const contractUri = 'https://zksandbox.netlify.app/'
+type SendToWebViewProps = {
+  mrzKey: string, 
+  scannedDataGroupList: [string, string][], 
+  openPassportData: any,
+  webViewLogs: WebViewLogType[],
+  setWebViewLogs: (setter: (prev: WebViewLogType[]) => WebViewLogType[]) => void
+};
+function SendToWebView({ 
+  mrzKey, scannedDataGroupList, openPassportData, 
+  webViewLogs, setWebViewLogs 
+}: SendToWebViewProps) {
+  const wRef = useRef<ContractWebView>(null);
+  const sendToWebView = useCallback(() => {
+    const command = {
+      action: 'sendPassportData',
+      mrzKey,
+      scannedDataGroupList,
+      openPassportData
+    };
+    setWebViewLogs(prev => [...prev, { type: 'command', data: command }]);
+    wRef.current?.sendCommandToWebApp(command)
+      .then((response) => {
+        setWebViewLogs(prev => [...prev, { type: 'response', data: response }])
+      }).catch((error) => {
+        setWebViewLogs(prev => [...prev, { type: 'error', data: serializeError(error) }])
+      });
+  }, [mrzKey, scannedDataGroupList, openPassportData]);
+  return (
+    <>
+      <Button mode='contained' onPress={sendToWebView}>
+        Send to WebView
+      </Button>
+      <ContractWebView
+        ref={wRef}
+        uri={contractUri}
+      />
+      {webViewLogs.map((log: WebViewLogType, index) => (
+        <Card key={index}>
+          <Card.Title title={log.type} />
+          <Card.Content>
+            <Text variant='bodySmall' style={tw`font-mono`}>
+              {JSON.stringify(log.data)}
+            </Text>
+          </Card.Content>
+        </Card>
+      ))}
+    </>
+  )
+}
+
 export default function TabPassportScan() {
   const [mrzKey, setMRZKey] = useState("");
   const [scannedDataGroupList, setScannedDataGroupList] = useState<[string, string][]>([]);
   const [openPassportData, setOpenPassportData] = useState<object>();
+  const [webViewLogs, setWebViewLogs] = useState<WebViewLogType[]>([]);
   const handlePassportScanned = useCallback(async ({
     openpassport,
     ...nextScannedDataGroupList
@@ -239,10 +295,25 @@ export default function TabPassportScan() {
               {JSON.stringify(openPassportData, null, 2)}
             </Text>
           </List.Accordion>
+          <List.Accordion title="Send to Webview" id="sendToWebView">
+            <SendToWebView
+              mrzKey={mrzKey}
+              scannedDataGroupList={scannedDataGroupList}
+              openPassportData={openPassportData}
+              webViewLogs={webViewLogs}
+              setWebViewLogs={setWebViewLogs}
+            >
+            </SendToWebView>
+          </List.Accordion>
         </List.AccordionGroup>
       </ScrollView>
       <ScanButton mrzKey={mrzKey} onPassportScanned={handlePassportScanned} />
-      <ExportButton mrzKey={mrzKey} scannedDataGroupList={scannedDataGroupList} openPassportData={openPassportData} />
+      <ExportButton 
+        mrzKey={mrzKey} 
+        scannedDataGroupList={scannedDataGroupList} 
+        openPassportData={openPassportData} 
+        webViewLogs={webViewLogs}
+      />
     </>
   )
 }
