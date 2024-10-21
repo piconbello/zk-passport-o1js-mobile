@@ -48,6 +48,11 @@
       [
         "expo-build-properties",
         {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
+          },
           "ios": {
             "deploymentTarget": "15.0"
           }
@@ -62,6 +67,10 @@
     "assetBundlePatterns": [
       "assets/*"
     ],
-    "extra": {}
+    "extra": {
+      "eas": {
+        "projectId": "34f55a25-5377-443b-9aef-8c14666b50d7"
+      }
+    }
   }
 }

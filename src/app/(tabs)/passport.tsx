@@ -1,7 +1,7 @@
 import NfcManager from 'react-native-nfc-manager';
 import * as Clipboard from 'expo-clipboard';
 
-import { PassportData, getMRZKey, scanPassport } from "@/modules/custom-ios-passport-reader";
+import { PassportData, getMRZKey, scanPassport } from "@/modules/custom-passport-reader";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import tw from '@/tw';
@@ -201,7 +201,7 @@ function ScanButton({ mrzKey, onPassportScanned }: ScanButtonProps) {
 export default function TabPassportScan() {
   const [mrzKey, setMRZKey] = useState("");
   const [scannedDataGroupList, setScannedDataGroupList] = useState<[string, string][]>([]);
-  const [openPassportData, setopenPassportData] = useState<PassportData>();
+  const [openPassportData, setOpenPassportData] = useState<object>();
   const handlePassportScanned = useCallback(async ({
     openpassport,
     ...nextScannedDataGroupList
@@ -210,12 +210,15 @@ export default function TabPassportScan() {
       Object.entries(nextScannedDataGroupList
         ).sort(([a], [b]) => a.localeCompare(b)));
     try {
-      const nextopenPassportData = JSON.parse(openpassport);
-      setopenPassportData(nextopenPassportData);
+      let nextOpenPassportData = openpassport as object;
+      if (typeof openpassport === 'string') {
+        nextOpenPassportData = JSON.parse(openpassport);
+      }
+      setOpenPassportData(nextOpenPassportData);
     } catch (err) {
       console.log(err);
     }
-  }, [setScannedDataGroupList, setopenPassportData]);
+  }, [setScannedDataGroupList, setOpenPassportData]);
   const [expandedId, setExpandedId] = useState<string | number>("mrz");
   const handleAccordionPress = useCallback((id: string | number) => {
     setExpandedId(prev => prev === id? '' : id);
