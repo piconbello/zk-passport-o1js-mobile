@@ -118,7 +118,7 @@ class ContractWebView extends Component<ContractWebViewProps> {
         source={{ uri: this.props.uri }}
         injectedJavaScriptBeforeContentLoaded={this.runFirst}
         onMessage={this.handleMessage}
-        style={{ width: 200, height: 50 }}
+        style={{ width: 200, height: 200 }}
       />
     );
   }
