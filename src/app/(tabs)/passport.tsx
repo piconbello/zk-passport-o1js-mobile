@@ -210,7 +210,7 @@ function ScanButton({ mrzKey, onPassportScanned }: ScanButtonProps) {
 }
 
 type WebViewLogType = { date: number, type: string, data: object }
-const contractUri = 'https://zksandbox.netlify.app/'
+const contractUri = 'https://zkweb.netlify.app/'; //'https://zksandbox.netlify.app/'
 type SendToWebViewProps = {
   mrzKey: string, 
   scannedDataGroupList: [string, string][], 
