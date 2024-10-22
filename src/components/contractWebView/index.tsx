@@ -1,8 +1,11 @@
+import tw from "@/tw";
 import { Component, ReactNode, createRef } from "react";
+import { View } from "react-native";
 import { WebView, WebViewMessageEvent } from "react-native-webview";
 
 type ContractWebViewProps = {
   uri: string;
+  onNotify?: (data: object) => void;
 }
 
 class ContractWebView extends Component<ContractWebViewProps> {
@@ -20,13 +23,13 @@ class ContractWebView extends Component<ContractWebViewProps> {
           }
         }
       });
-      if (typeof window.handleCommand === 'undefined') {
-        window.handleCommand = (cmd) => {
-          oldConsoleError('[NATIVE] window.handleCommand not defined');
+      if (typeof window.handleDeviceCommand === 'undefined') {
+        window.handleDeviceCommand = (cmd) => {
+          oldConsoleError('[NATIVE] window.handleDeviceCommand not defined');
           return cmd;
         }
       }
-      window._handleCommand = async (id, cmd) => {
+      window._handleDeviceCommand = async (id, cmd) => {
         try {
           cmd = JSON.parse(cmd);
         } catch (error) {
@@ -34,7 +37,7 @@ class ContractWebView extends Component<ContractWebViewProps> {
         }
         oldConsoleLog('[NATIVE] RECEIVED COMMAND: ', cmd);
         try {
-          const response = await window.handleCommand(cmd);
+          const response = await window.handleDeviceCommand(cmd);
           oldConsoleLog('[NATIVE] RESPONSE: ', response);
           window.ReactNativeWebView.postMessage(JSON.stringify({ type:'response', id, response }));
         } catch (error) {
@@ -44,6 +47,10 @@ class ContractWebView extends Component<ContractWebViewProps> {
           window.ReactNativeWebView.postMessage(JSON.stringify({ type:'response', id, error: e }));
         }
       };
+      window.notifyDevice = async (data) => {
+        oldConsoleLog('[NATIVE] NOTIFY: ', data);
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type:'notify', data }));
+      }
     })();
     true;
   `;
@@ -67,7 +74,7 @@ class ContractWebView extends Component<ContractWebViewProps> {
       rejectPromise = reject;
     });
     this.webViewRef.current.injectJavaScript(`
-      window._handleCommand("${id}", ${JSON.stringify(commandObject)});
+      window._handleDeviceCommand("${id}", ${JSON.stringify(commandObject)});
       true;
     `);
     this.resolveMap.set(id, { resolve: resolvePromise, reject: rejectPromise });
@@ -105,6 +112,9 @@ class ContractWebView extends Component<ContractWebViewProps> {
           console.error(`[WEBVIEW] RECEIVED RESPONSE FOR ID ${data.id} BUT NO PENDING PROMISE`);
         }
         return;
+      case 'notify':
+        this.props.onNotify?.(data.data);
+        return;
       default:
         console.log(`[WEBVIEW] UNHANDLED MESSAGE: ${rawData}`);
         return;
@@ -113,13 +123,14 @@ class ContractWebView extends Component<ContractWebViewProps> {
 
   render(): ReactNode {
     return (
-      <WebView
-        ref={this.webViewRef}
-        source={{ uri: this.props.uri }}
-        injectedJavaScriptBeforeContentLoaded={this.runFirst}
-        onMessage={this.handleMessage}
-        style={{ width: 200, height: 200 }}
-      />
+      <View style={tw`w-full h-96 border border-dashed border-amber-800 rounded-sm`}>
+        <WebView
+          ref={this.webViewRef}
+          source={{ uri: this.props.uri }}
+          injectedJavaScriptBeforeContentLoaded={this.runFirst}
+          onMessage={this.handleMessage}
+        />
+      </View>
     );
   }
 }

@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import tw from '@/tw';
 import { FlatList, ScrollView, View } from 'react-native';
 import dayjs from 'dayjs';
-import { Button, Card, FAB, List, Text } from 'react-native-paper';
+import { Button, Card, Chip, FAB, List, Text } from 'react-native-paper';
 import { useToast } from 'react-native-paper-toast';
 import base64 from 'react-native-base64'
 import useRefMemo from '@/hooks/useRefMemo';
@@ -91,29 +91,31 @@ function ScannedDataGroupList({ scannedDataGroupList }: ScannedDataGroupListProp
     return scannedDataGroupList.map(([key, value]) => ({
       dataGroupName: key,
       rawData: value,
-      decodedData: base64.decode(value)
+      decodedData: base64.decode(value).replace(/[\s\n]+/g,''),
     }));
   }, [scannedDataGroupList]);
   // const keyExtractor = useCallback((item: DataGroup) => item.dataGroupName, []);
 
-  if (scannedDataGroupList.length === 0) return <Text>No scanned data found</Text>;
+  let children = [<Chip style={tw`text-center`}>No scanned data found</Chip>];
+
+  if (scannedDataGroupList.length > 0) {
+    children = dataGroupList.map((item, index) => (
+      <Card key={item.dataGroupName} style={tw`my-2`}>
+       <Card.Title title={item.dataGroupName} subtitle={item.rawData} />
+       <Card.Content>
+         <Text variant='bodySmall' style={tw`font-mono`}>
+           {item.decodedData}
+         </Text>
+       </Card.Content>
+     </Card>
+    ));
+  }
 
   return (
-    <>
-      {
-        dataGroupList.map((item, index) => (
-          <Card key={item.dataGroupName}>
-           <Card.Title title={item.dataGroupName} subtitle={item.rawData} />
-           <Card.Content>
-             <Text variant='bodySmall' style={tw`font-mono`}>
-               {item.decodedData}
-             </Text>
-           </Card.Content>
-         </Card>
-        ))
-      }
-    </>
-  )
+    <View style={tw`px-2`}>
+      {children}
+    </View>
+  );
   // return (
   //   <FlatList
   //     data={dataGroupList}
@@ -201,7 +203,7 @@ function ScanButton({ mrzKey, onPassportScanned }: ScanButtonProps) {
   );
 }
 
-type WebViewLogType = { type: string, data: object }
+type WebViewLogType = { date: number, type: string, data: object }
 const contractUri = 'https://zksandbox.netlify.app/'
 type SendToWebViewProps = {
   mrzKey: string, 
@@ -215,6 +217,9 @@ function SendToWebView({
   webViewLogs, setWebViewLogs 
 }: SendToWebViewProps) {
   const wRef = useRef<ContractWebView>(null);
+  const handleNotify = useCallback((data: object) => {
+    setWebViewLogs(prev => [...prev, { date: Date.now(), type: 'notify', data }]);
+  }, [setWebViewLogs]);
   const sendToWebView = useCallback(() => {
     const command = {
       action: 'sendPassportData',
@@ -222,26 +227,31 @@ function SendToWebView({
       scannedDataGroupList,
       openPassportData
     };
-    setWebViewLogs(prev => [...prev, { type: 'command', data: command }]);
+    setWebViewLogs(prev => [...prev, { date: Date.now(), type: 'command', data: command }]);
     wRef.current?.sendCommandToWebApp(command)
       .then((response) => {
-        setWebViewLogs(prev => [...prev, { type: 'response', data: response }])
+        setWebViewLogs(prev => [...prev, { date: Date.now(), type: 'response', data: response }])
       }).catch((error) => {
-        setWebViewLogs(prev => [...prev, { type: 'error', data: serializeError(error) }])
+        setWebViewLogs(prev => [...prev, { date: Date.now(), type: 'error', data: serializeError(error) }])
       });
-  }, [mrzKey, scannedDataGroupList, openPassportData]);
+  }, [mrzKey, scannedDataGroupList, openPassportData, setWebViewLogs]);
   return (
-    <>
-      <Button mode='contained' onPress={sendToWebView}>
+    <View style={tw`px-2`}>
+      <Button mode='contained' onPress={sendToWebView} style={tw`mb-2`}>
         Send to WebView
       </Button>
       <ContractWebView
         ref={wRef}
         uri={contractUri}
+        onNotify={handleNotify}
       />
-      {webViewLogs.map((log: WebViewLogType, index) => (
-        <Card key={index}>
-          <Card.Title title={log.type} />
+      {webViewLogs.reverse().map((log: WebViewLogType, index) => (
+        <Card key={index} style={tw`my-2`}>
+          <Card.Title 
+            title={`#${webViewLogs.length - index}: ${log.type} ~ (${
+              (new Date(log.date)).toLocaleString()
+            })`}
+          />
           <Card.Content>
             <Text variant='bodySmall' style={tw`font-mono`}>
               {JSON.stringify(log.data)}
@@ -249,14 +259,14 @@ function SendToWebView({
           </Card.Content>
         </Card>
       ))}
-    </>
+    </View>
   )
 }
 
 export default function TabPassportScan() {
   const [mrzKey, setMRZKey] = useState("");
   const [scannedDataGroupList, setScannedDataGroupList] = useState<[string, string][]>([]);
-  const [openPassportData, setOpenPassportData] = useState<object>();
+  const [openPassportData, setOpenPassportData] = useState<object>({});
   const [webViewLogs, setWebViewLogs] = useState<WebViewLogType[]>([]);
   const handlePassportScanned = useCallback(async ({
     openpassport,
@@ -282,7 +292,7 @@ export default function TabPassportScan() {
 
   return (
     <>
-      <ScrollView>
+      <ScrollView contentContainerStyle={tw`pb-24`}>
         <List.AccordionGroup expandedId={expandedId} onAccordionPress={handleAccordionPress}>
           <List.Accordion title={`MRZ Key: ${mrzKey}`} id="mrz">
             <MRZFormComponent setMRZKey={setMRZKey} />
@@ -291,9 +301,11 @@ export default function TabPassportScan() {
             <ScannedDataGroupList scannedDataGroupList={scannedDataGroupList} />
           </List.Accordion>
           <List.Accordion title="Open Passport Formatted Data" id="openPassportData">
-            <Text variant='bodySmall' style={tw`font-mono`}>
-              {JSON.stringify(openPassportData, null, 2)}
-            </Text>
+            <ScrollView horizontal={true} contentContainerStyle={tw`flex-grow`}>
+              <Text variant='bodySmall' style={tw`font-mono px-2`}>
+                {JSON.stringify(openPassportData, null, 2)}
+              </Text>
+            </ScrollView>
           </List.Accordion>
           <List.Accordion title="Send to Webview" id="sendToWebView">
             <SendToWebView

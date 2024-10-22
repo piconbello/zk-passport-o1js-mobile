@@ -21,7 +21,7 @@ export default function TabTwoScreen() {
     <View style={styles.container}>
       <ContractWebView 
         ref={wRef}
-        uri="https://corupta.net/" 
+        uri="https://guess-number-phi-ochre.vercel.app/" 
       />
     </View>
   );
