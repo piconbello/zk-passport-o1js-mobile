@@ -6,7 +6,7 @@ const fs = require('fs');
 const withCSCAMasterList = (config) => {
     config = withXcodeProject(config, async (config) => {
         config.modResults = IOSConfig.XcodeUtils.addResourceFileToGroup({
-            filepath: path.join('..', 'masterList.pem'),
+            filepath: path.join('..', 'assets', 'masterList.pem'),
             groupName: config.modRequest.projectName,
             // groupName: 'main',
             project: config.modResults,
@@ -19,7 +19,7 @@ const withCSCAMasterList = (config) => {
         async (config) => {
             const assetsDir = path.join(config.modRequest.platformProjectRoot, 'app', 'src', 'main', 'assets');
             fs.mkdirSync(assetsDir, { recursive: true });
-            fs.copyFileSync(path.join('.', 'masterList.pem'), path.join(assetsDir,'masterList.pem'));
+            fs.copyFileSync(path.join('assets', 'masterList.pem'), path.join(assetsDir,'masterList.pem'));
             return config;
         }
     ])
