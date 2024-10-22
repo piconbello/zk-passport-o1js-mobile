@@ -122,6 +122,7 @@ class Foo(json: String) : JSONObject(json) {
 class CustomPassportReaderModule : Module(), ReactActivityLifecycleListener {
   private var scanPromise: Promise? = null
   private var mrzKey: String? = null
+  private var myCurrentActivity: Activity? = null
   
   data class Data(val id: String, val digest: String, val signature: String, val publicKey: String)
 
@@ -136,6 +137,7 @@ class CustomPassportReaderModule : Module(), ReactActivityLifecycleListener {
   // }
   
   private fun resetState() {
+    // Log.d("moooo", "resetState")
     scanPromise = null
     mrzKey = null
   }
@@ -181,6 +183,62 @@ class CustomPassportReaderModule : Module(), ReactActivityLifecycleListener {
         Log.d("CustomPassportReaderModule", "mrzKey set to: " + mrzKey)
       }
     }
+
+    OnActivityEntersForeground {
+      // Log.d("mooo", "OnActivityEntersForeground")
+      appContext.reactContext?.let {
+        // Log.d("mooo", "we have reactContext")
+        val mNfcAdapter = NfcAdapter.getDefaultAdapter(it)
+        mNfcAdapter?.let {
+          // Log.d("mooo", "we have mnfcadapter")
+          val activity = appContext.currentActivity
+          activity?.let {
+            // Log.d("mooo", "we have activity")
+            val intent = Intent(it.applicationContext, it.javaClass)
+            intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            val pendingIntent = PendingIntent.getActivity(it, 0, intent, PendingIntent.FLAG_MUTABLE) // PendingIntent.FLAG_UPDATE_CURRENT
+            val filter = arrayOf(arrayOf(IsoDep::class.java.name))
+            mNfcAdapter.enableForegroundDispatch(it, pendingIntent, null, filter)
+          }
+        }
+      }
+    }
+
+    OnActivityEntersBackground {
+      // Log.d("mooo", "OnActivityEntersBackground")
+      val mNfcAdapter = NfcAdapter.getDefaultAdapter(appContext.reactContext)
+      val activity = appContext.currentActivity
+      activity?.let {
+        // Log.d("mooo", "we have activity")
+        mNfcAdapter?.disableForegroundDispatch(it)
+      }
+    }
+
+    OnNewIntent { intent: Intent ->
+      // Log.d("CustomPassportReaderModule", "receiveIntent: " + intent.action)
+      if (scanPromise == null) {
+        // Log.d("moooo", "Scan promise is null :(")
+      } else if (NfcAdapter.ACTION_TECH_DISCOVERED == intent.action) {
+        val tag: Tag? = intent.extras?.getParcelable(NfcAdapter.EXTRA_TAG)
+        if (tag?.techList?.contains("android.nfc.tech.IsoDep") == true) {
+          mrzKey?.let {
+            val passportNumber = it.substring(0, 9)
+            val birthDate = it.substring(10, 16)
+            val expirationDate = it.substring(17, 23)
+            if (!passportNumber.isNullOrEmpty() && !birthDate.isNullOrEmpty() && !expirationDate.isNullOrEmpty()) {
+              // Log.d("CustomPassportReaderModule", "MRZ key" + passportNumber + " " + birthDate + " " + expirationDate)
+              val bacKey: BACKeySpec = BACKey(passportNumber, birthDate, expirationDate)
+              ReadTask(IsoDep.get(tag), bacKey).execute()
+            }
+          }
+        }
+      }
+    }
+
+    OnActivityDestroys {
+      // Log.d("mooo", "onDestroy")
+      resetState()
+    }
   }
 
   private fun eventMessageEmitter(message: String) {
@@ -190,48 +248,48 @@ class CustomPassportReaderModule : Module(), ReactActivityLifecycleListener {
     ))
   }
 
-  override fun onDestroy(currentActivity: Activity) {
-    resetState()
-  }
+  //   appContext.reactContext?.let {
+  //     val mNfcAdapter = NfcAdapter.getDefaultAdapter(it)
+  //     mNfcAdapter?.let {
+  //       val activity = currentActivity
+  //       activity?.let {
+  //         val intent = Intent(it.applicationContext, it.javaClass)
+  //         intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+  //         val pendingIntent = PendingIntent.getActivity(it, 0, intent, PendingIntent.FLAG_MUTABLE) // PendingIntent.FLAG_UPDATE_CURRENT
+  //         val filter = arrayOf(arrayOf(IsoDep::class.java.name))
+  //         mNfcAdapter.enableForegroundDispatch(it, pendingIntent, null, filter)
+  //       }
+  //     }
+  //   }
+  // }
 
-  override fun onResume(currentActivity: Activity) {
-    val mNfcAdapter = NfcAdapter.getDefaultAdapter(appContext.reactContext)
-    mNfcAdapter?.let {
-      val activity = currentActivity
-      activity?.let {
-        val intent = Intent(it.applicationContext, it.javaClass)
-        intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-        val pendingIntent = PendingIntent.getActivity(it, 0, intent, PendingIntent.FLAG_MUTABLE) // PendingIntent.FLAG_UPDATE_CURRENT
-        val filter = arrayOf(arrayOf(IsoDep::class.java.name))
-        mNfcAdapter.enableForegroundDispatch(it, pendingIntent, null, filter)
-      }
-    }
-  }
+  // override fun onPause(currentActivity: Activity) {
+  //   val mNfcAdapter = NfcAdapter.getDefaultAdapter(appContext.reactContext)
+  //   mNfcAdapter?.disableForegroundDispatch(currentActivity)
+  // }
 
-  override fun onPause(currentActivity: Activity) {
-    val mNfcAdapter = NfcAdapter.getDefaultAdapter(appContext.reactContext)
-    mNfcAdapter?.disableForegroundDispatch(currentActivity)
-  }
-
-  override fun onNewIntent(intent: Intent): Boolean {
-    Log.d("CustomPassportReaderModule", "receiveIntent: " + intent.action)
-    if (scanPromise == null) return false;
-    if (NfcAdapter.ACTION_TECH_DISCOVERED == intent.action) {
-      val tag: Tag? = intent.extras?.getParcelable(NfcAdapter.EXTRA_TAG)
-      if (tag?.techList?.contains("android.nfc.tech.IsoDep") == true) {
-        mrzKey?.let {
-          val passportNumber = it.substring(0, 8)
-          val birthDate = it.substring(9, 15)
-          val expirationDate = it.substring(16, 22)
-          if (!passportNumber.isNullOrEmpty() && !birthDate.isNullOrEmpty() && !expirationDate.isNullOrEmpty()) {
-            val bacKey: BACKeySpec = BACKey(passportNumber, birthDate, expirationDate)
-            ReadTask(IsoDep.get(tag), bacKey).execute()
-          }
-        }
-      }
-    }
-    return true;
-  }
+  // override fun onNewIntent(intent: Intent): Boolean {
+  //   Log.d("CustomPassportReaderModule", "receiveIntent: " + intent.action)
+  //   if (scanPromise == null) {
+  //     Log.d("moooo", "Scan promise is null :(")
+  //     return false;
+  //   }
+  //   if (NfcAdapter.ACTION_TECH_DISCOVERED == intent.action) {
+  //     val tag: Tag? = intent.extras?.getParcelable(NfcAdapter.EXTRA_TAG)
+  //     if (tag?.techList?.contains("android.nfc.tech.IsoDep") == true) {
+  //       mrzKey?.let {
+  //         val passportNumber = it.substring(0, 8)
+  //         val birthDate = it.substring(9, 15)
+  //         val expirationDate = it.substring(16, 22)
+  //         if (!passportNumber.isNullOrEmpty() && !birthDate.isNullOrEmpty() && !expirationDate.isNullOrEmpty()) {
+  //           val bacKey: BACKeySpec = BACKey(passportNumber, birthDate, expirationDate)
+  //           ReadTask(IsoDep.get(tag), bacKey).execute()
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return true;
+  // }
 
   private fun toBase64(bitmap: Bitmap, quality: Int): String {
     val byteArrayOutputStream = ByteArrayOutputStream()

@@ -43,6 +43,7 @@ export function getMRZKey(passportNumber: string, dateOfBirth: string, dateOfExp
  * @returns A Promise that resolves to the extracted passport data as a PassportData object.
  * */
 export async function scanPassport(mrzKey: string): Promise<PassportData> {
+  // return Promise.resolve({ openpassport: "{}"});
   return await CustomPassportReaderModule.scanPassport(mrzKey);
 }
 

@@ -22,8 +22,8 @@ export type PassportData = {
   SOD?: string,
   Unknown?: string,
 
-  AAChallenge: string,
-  AASignature: string,
+  AAChallenge?: string,
+  AASignature?: string,
 
   openpassport: string | object, // output exactly same to that of OpenPassport. stringified on ios, map on android
 }
