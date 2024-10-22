@@ -1,3 +1,5 @@
+gradle.startParameter.setLogLevel LogLevel.DEBUG
+
 apply plugin: 'com.android.library'
 
 group = 'expo.modules.custompassportreader'
@@ -9,11 +11,12 @@ applyKotlinExpoModulesCorePlugin()
 useCoreDependencies()
 useExpoPublishing()
 
+
 dependencies {
   implementation 'com.google.code.gson:gson:2.8.9'  // Check for the latest version
   implementation 'org.jmrtd:jmrtd:0.7.42'
   implementation "net.sf.scuba:scuba-sc-android:0.0.18"
-  implementation "com.madgag.spongycastle:prov:1.54.0.0"
+  // implementation "com.madgag.spongycastle:prov:1.54.0.0"
   // implementation 'com.gemalto.jp2:jp2-android:1.0.3'
   implementation 'com.github.Tgo1014:JP2ForAndroid:1.0.4'
   implementation 'com.github.mhshams:jnbis:1.1.0'
@@ -50,5 +53,10 @@ android {
   }
   lintOptions {
     abortOnError false
+  }
+  packaging {
+    resources {
+      excludes += ["META-INF/versions/9/OSGI-INF/MANIFEST.MF"]
+    }
   }
 }

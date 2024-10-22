@@ -4,6 +4,6 @@
     "modules": ["CustomPassportReaderModule"]
   },
   "android": {
-    "modules": ["expo.modules.custompassportreader.CutomPassportReaderModule"]
+    "modules": ["expo.modules.custompassportreader.CustomPassportReaderModule"]
   }
 }
