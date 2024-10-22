@@ -29,10 +29,10 @@ export const stylesheet = Object.freeze({
   formGroup: {
     //label+input+help+error
     normal: {
-      marginBottom: 12,
+      marginBottom: 4,
     },
     error: {
-      marginBottom: 12,
+      marginBottom: 4,
     },
   },
   formGroupInner: {
@@ -146,7 +146,7 @@ export const stylesheet = Object.freeze({
       fontSize: FONT_SIZE,
 
       paddingVertical: 0,
-      marginBottom: 5,
+      // marginBottom: 5,
       marginTop: 5,
       borderColor: 'red',
     },
@@ -156,7 +156,7 @@ export const stylesheet = Object.freeze({
       fontSize: FONT_SIZE,
 
       paddingVertical: 0,
-      marginBottom: 5,
+      // marginBottom: 5,
     },
     // the style applied when the textbox is not editable
     notEditable: {
@@ -164,7 +164,7 @@ export const stylesheet = Object.freeze({
       fontSize: FONT_SIZE,
 
       paddingVertical: 0,
-      marginBottom: 5,
+      // marginBottom: 5,
       backgroundColor: DISABLED_BACKGROUND_COLOR,
     },
   },

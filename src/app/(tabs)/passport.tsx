@@ -9,7 +9,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import tw from '@/tw';
 import { FlatList, ScrollView, View } from 'react-native';
 import dayjs from 'dayjs';
-import { Button, Card, Chip, FAB, List, Text } from 'react-native-paper';
+import { Button, Card, Chip, Divider, FAB, List, Text } from 'react-native-paper';
 import { useToast } from 'react-native-paper-toast';
 import base64 from 'react-native-base64'
 import useRefMemo from '@/hooks/useRefMemo';
@@ -26,7 +26,7 @@ const MRZData = t.struct({
   dateOfExpiry: t.Date,
 });
 const formOptions = {
-  label: 'Form label?',
+  // label: 'MRZ',
   fields: {
     documentNumber: {
       placeholder: 'X12345678',
@@ -71,15 +71,21 @@ function MRZFormComponent({ setMRZKey }: MRZFormProps) {
   }, []);
 
   return (
-    <View style={tw`ml-6 mr-7`}>
-      <Form
-        ref={formRef}
-        type={MRZData}
-        options={formOptions}
-      />
-      <Button mode='contained' onPress={handleSubmit}>
-        Calculate MRZ Key
-      </Button>
+    <View style={tw`px-2 pb-4`}>
+      <Card>
+        <Card.Content>
+          <Form
+            ref={formRef}
+            type={MRZData}
+            options={formOptions}
+          />
+        </Card.Content>
+        <Card.Actions>
+          <Button mode='contained' onPress={handleSubmit}>
+            Calculate MRZ Key
+          </Button>
+        </Card.Actions>
+      </Card>
     </View>
   );
 }
@@ -112,7 +118,7 @@ function ScannedDataGroupList({ scannedDataGroupList }: ScannedDataGroupListProp
   }
 
   return (
-    <View style={tw`px-2`}>
+    <View style={tw`px-2 pb-4`}>
       {children}
     </View>
   );
@@ -236,17 +242,17 @@ function SendToWebView({
       });
   }, [mrzKey, scannedDataGroupList, openPassportData, setWebViewLogs]);
   return (
-    <View style={tw`px-2`}>
-      <Button mode='contained' onPress={sendToWebView} style={tw`mb-2`}>
-        Send to WebView
-      </Button>
+    <View style={tw`px-2 pb-4`}>
       <ContractWebView
         ref={wRef}
         uri={contractUri}
         onNotify={handleNotify}
       />
+      <Button mode='contained' onPress={sendToWebView} style={tw`-mt-1 rounded-none rounded-b-lg  border border-solid border-amber-800 border-t-0`}>
+        Send to WebView
+      </Button>
       {webViewLogs.reverse().map((log: WebViewLogType, index) => (
-        <Card key={index} style={tw`my-2`}>
+        <Card key={index} style={tw`mt-2`}>
           <Card.Title 
             title={`#${webViewLogs.length - index}: ${log.type} ~ (${
               (new Date(log.date)).toLocaleString()
@@ -297,16 +303,21 @@ export default function TabPassportScan() {
           <List.Accordion title={`MRZ Key: ${mrzKey}`} id="mrz">
             <MRZFormComponent setMRZKey={setMRZKey} />
           </List.Accordion>
-          <List.Accordion title={scannedDataGroupList.length === 0 ? 'Not scanned yet' : `${scannedDataGroupList.map(([k,v])=>k).join(', ')}`} id="scannedDataGroupList">
+          <Divider />
+          <List.Accordion title={scannedDataGroupList.length === 0 ? 'No data group scanned yet' : `${scannedDataGroupList.map(([k,v])=>k).join(', ')}`} 
+            id="scannedDataGroupList">
             <ScannedDataGroupList scannedDataGroupList={scannedDataGroupList} />
           </List.Accordion>
-          <List.Accordion title="Open Passport Formatted Data" id="openPassportData">
+          <Divider />
+          <List.Accordion title="Open Passport Formatted Data"
+            id="openPassportData">
             <ScrollView horizontal={true} contentContainerStyle={tw`flex-grow`}>
-              <Text variant='bodySmall' style={tw`font-mono px-2`}>
+              <Text variant='bodySmall' style={tw`font-mono px-2 pb-4`}>
                 {JSON.stringify(openPassportData, null, 2)}
               </Text>
             </ScrollView>
           </List.Accordion>
+          <Divider />
           <List.Accordion title="Send to Webview" id="sendToWebView">
             <SendToWebView
               mrzKey={mrzKey}
@@ -317,6 +328,7 @@ export default function TabPassportScan() {
             >
             </SendToWebView>
           </List.Accordion>
+          <Divider />
         </List.AccordionGroup>
       </ScrollView>
       <ScanButton mrzKey={mrzKey} onPassportScanned={handlePassportScanned} />

@@ -6,6 +6,7 @@ import { DatePickerModal, TimePickerModal } from 'react-native-paper-dates';
 import { t } from '../../../helpers/i18n';
 
 import moment from 'moment';
+import { HelperText, TextInput } from 'react-native-paper';
 
 class CollapsibleDatePicker extends React.Component {
   constructor(props) {
@@ -110,9 +111,17 @@ class CollapsibleDatePicker extends React.Component {
 
     return (
       <View>
-        <TouchableOpacity style={touchableStyle} disabled={locals.disabled} onPress={this._onPress}>
+        {/* <TouchableOpacity style={touchableStyle} disabled={locals.disabled} onPress={this._onPress}>
           <Text style={dateValueStyle}>{this.formattedValue}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <TextInput
+          mode='outlined'
+          error={locals.hasError}
+          disabled={locals.editable === false}
+          label={locals.label}
+          onFocus={this._onPress}
+          value={this.formattedValue}
+        />
         <DateTimePickerModel
           locale={t('lang') == 'tr' ? 'tr' : 'en-GB'} // en_GB for 24 hour format
           mode={locals.mode}
@@ -153,23 +162,19 @@ function datepicker(locals) {
     helpBlockStyle = stylesheet.helpBlock.error;
   }
 
-  const label = locals.label ? <Text style={controlLabelStyle}>{locals.label}</Text> : null;
-  const help = locals.help ? <Text style={helpBlockStyle}>{locals.help}</Text> : null;
-  const error =
-    locals.hasError && locals.error ? (
-      <Text accessibilityLiveRegion="polite" style={errorBlockStyle}>
-        {locals.error}
-      </Text>
-    ) : null;
+  var error = locals.hasError ? locals.error : '';
+  var help = locals.help ? locals.help : '';
 
   return (
     <View style={formGroupStyle}>
-      {label}
-      <View style={formGroupInnerStyle}>
-        <CollapsibleDatePicker locals={locals} />
-      </View>
-      {help}
-      {error}
+      <CollapsibleDatePicker locals={locals} />
+      <HelperText 
+        disabled={locals.editable === false} 
+        visible={!!(error || help)}
+        type={error ? 'error' : 'info'}
+      >
+        {error || help}
+      </HelperText>
     </View>
   );
 }

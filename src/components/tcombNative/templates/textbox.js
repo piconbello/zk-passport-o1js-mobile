@@ -1,6 +1,7 @@
 import React, { createRef } from 'react';
-import { View, Text, TextInput } from 'react-native';
+import { View } from 'react-native';
 import { stylesheet } from '../stylesheet';
+import { HelperText, Text, TextInput } from 'react-native-paper';
 
 function textbox(locals) {
   if (locals.hidden) {
@@ -31,63 +32,60 @@ function textbox(locals) {
     formGroupInnerStyle = stylesheet.formGroupInner.notEditable;
   }
 
-  var label = locals.label ? <Text style={controlLabelStyle}>{locals.label}</Text> : null;
-  var help = locals.help ? <Text style={helpBlockStyle}>{locals.help}</Text> : null;
-  var error =
-    locals.hasError && locals.error ? (
-      <Text accessibilityLiveRegion="polite" style={errorBlockStyle}>
-        {locals.error}
-      </Text>
-    ) : null;
+  var error = locals.hasError ? locals.error : '';
+  var help = locals.help ? locals.help : '';
 
   return (
     <View style={formGroupStyle}>
-      {label}
-      <View style={formGroupInnerStyle}>
-        <View style={textboxViewStyle}>
-          <TextInput
-            accessibilityLabel={locals.label}
-            ref={textBoxRef}
-            allowFontScaling={locals.allowFontScaling}
-            autoCapitalize={locals.autoCapitalize}
-            autoCorrect={locals.autoCorrect}
-            autoFocus={locals.autoFocus}
-            blurOnSubmit={locals.blurOnSubmit}
-            editable={locals.editable}
-            keyboardType={locals.keyboardType}
-            maxLength={locals.maxLength}
-            multiline={locals.multiline}
-            onBlur={locals.onBlur}
-            onEndEditing={locals.onEndEditing}
-            onFocus={locals.onFocus}
-            onLayout={locals.onLayout}
-            onSelectionChange={locals.onSelectionChange}
-            onSubmitEditing={locals.onSubmitEditing}
-            onContentSizeChange={locals.onContentSizeChange}
-            placeholderTextColor={locals.placeholderTextColor}
-            secureTextEntry={locals.secureTextEntry}
-            selectTextOnFocus={locals.selectTextOnFocus}
-            selectionColor={locals.selectionColor}
-            numberOfLines={locals.numberOfLines}
-            clearButtonMode={locals.clearButtonMode}
-            clearTextOnFocus={locals.clearTextOnFocus}
-            enablesReturnKeyAutomatically={locals.enablesReturnKeyAutomatically}
-            keyboardAppearance={locals.keyboardAppearance}
-            onKeyPress={locals.onKeyPress}
-            returnKeyType={locals.returnKeyType}
-            selectionState={locals.selectionState}
-            onChangeText={(value) => locals.onChange(value)}
-            onChange={locals.onChangeNative}
-            placeholder={locals.placeholder}
-            style={textboxStyle}
-            value={locals.value}
-            testID={locals.testID}
-            textContentType={locals.textContentType}
-          />
-        </View>
-      </View>
-      {help}
-      {error}
+      <TextInput
+        mode='outlined'
+        error={locals.hasError}
+        disabled={locals.editable === false}
+        label={locals.label}
+        accessibilityLabel={locals.label}
+        ref={textBoxRef}
+        allowFontScaling={locals.allowFontScaling}
+        autoCapitalize={locals.autoCapitalize}
+        autoCorrect={locals.autoCorrect}
+        autoFocus={locals.autoFocus}
+        blurOnSubmit={locals.blurOnSubmit}
+        editable={locals.editable}
+        keyboardType={locals.keyboardType}
+        maxLength={locals.maxLength}
+        multiline={locals.multiline}
+        onBlur={locals.onBlur}
+        onEndEditing={locals.onEndEditing}
+        onFocus={locals.onFocus}
+        onLayout={locals.onLayout}
+        onSelectionChange={locals.onSelectionChange}
+        onSubmitEditing={locals.onSubmitEditing}
+        onContentSizeChange={locals.onContentSizeChange}
+        placeholderTextColor={locals.placeholderTextColor}
+        secureTextEntry={locals.secureTextEntry}
+        selectTextOnFocus={locals.selectTextOnFocus}
+        selectionColor={locals.selectionColor}
+        numberOfLines={locals.numberOfLines}
+        clearButtonMode={locals.clearButtonMode}
+        clearTextOnFocus={locals.clearTextOnFocus}
+        enablesReturnKeyAutomatically={locals.enablesReturnKeyAutomatically}
+        keyboardAppearance={locals.keyboardAppearance}
+        onKeyPress={locals.onKeyPress}
+        returnKeyType={locals.returnKeyType}
+        selectionState={locals.selectionState}
+        onChangeText={(value) => locals.onChange(value)}
+        onChange={locals.onChangeNative}
+        placeholder={locals.placeholder}
+        value={locals.value}
+        testID={locals.testID}
+        textContentType={locals.textContentType}
+      />
+      <HelperText 
+        disabled={locals.editable === false} 
+        visible={!!(error || help)}
+        type={error ? 'error' : 'info'}
+      >
+        {error || help}
+      </HelperText>
     </View>
   );
 }
