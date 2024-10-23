@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.corupta.zkpassporto1js"
+      "bundleIdentifier": "com.corupta.zkpassporto1js",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to scan MRZ."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +25,8 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.NFC"
+        "android.permission.NFC",
+        "android.permission.CAMERA"
       ],
       "package": "com.corupta.zkpassporto1js",
       "runtimeVersion": "1.0.0"

@@ -19,6 +19,7 @@ import { PaperProvider } from 'react-native-paper';
 import { useColorScheme } from 'react-native';
 import Themes from '@/constants/Themes';
 import { ToastProvider } from 'react-native-paper-toast';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -75,10 +76,12 @@ function RootLayoutNav() {
       <PaperProvider theme={theme}>
         <ThemeProvider value={theme}>
           <ToastProvider>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-            </Stack>
+            <BottomSheetModalProvider>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+              </Stack>
+            </BottomSheetModalProvider>
           </ToastProvider>
         </ThemeProvider>
       </PaperProvider>

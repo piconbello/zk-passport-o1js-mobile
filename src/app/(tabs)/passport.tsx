@@ -4,11 +4,12 @@ import * as Clipboard from 'expo-clipboard';
 import { serializeError } from 'serialize-error';
 
 import { PassportData, getMRZKey, scanPassport } from "@/modules/custom-passport-reader";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { createRef, useCallback, useEffect, useRef, useState } from "react";
 
 import tw from '@/tw';
-import { FlatList, ScrollView, View } from 'react-native';
+import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
 import dayjs from 'dayjs';
+import moment from 'moment'; // todo unify date libraries at some point.
 import { Button, Card, Chip, Divider, FAB, List, Text } from 'react-native-paper';
 import { useToast } from 'react-native-paper-toast';
 import base64 from 'react-native-base64'
@@ -17,6 +18,7 @@ import useRefMemo from '@/hooks/useRefMemo';
 import 'tcomb-form-native-cr';
 import t from 'tcomb-validation';
 import ContractWebView from '@/components/contractWebView';
+import MRZScanner from '@/components/mrzScanner';
 //@ts-ignore
 const Form = t.form.Form;
 
@@ -52,42 +54,58 @@ const formOptions = {
 //   dateOfBirth?: Date;
 //   dateOfExpiry?: Date;
 // }
-type MRZFormProps = { setMRZKey: (mrzKey: string) => void };
-function MRZFormComponent({ setMRZKey }: MRZFormProps) {
-  const formRef = useRef();
+type MRZFormProps = { setMRZKey: (mrzKey: string) => void, mrzKey: string };
 
-  const handleSubmit = useCallback(() => {
-    // @ts-ignore
-    const isFormValid = formRef?.current?.getValue();
-    if (!isFormValid) return;
-    const { documentNumber, dateOfBirth, dateOfExpiry } = formRef.current?.getValue()!;
-    setMRZKey(
+class MRZFormComponent extends React.PureComponent<MRZFormProps> {
+  formRef: React.RefObject<any>;
+  initialValues?: { documentNumber: string; dateOfBirth: Date; dateOfExpiry: Date; };
+  constructor(props: MRZFormProps) {
+    super(props);
+    this.formRef = createRef();
+    if (this.props.mrzKey) {
+      this.initialValues = {
+        documentNumber: props.mrzKey.substring(0, 9),
+        dateOfBirth: moment(props.mrzKey.substring(10, 16), 'YYMMDD').toDate(),
+        dateOfExpiry: moment(props.mrzKey.substring(17, 23), 'YYMMDD').toDate(),
+      };
+    }
+  }
+
+  handleSubmit = () => {
+    const formValues = this.formRef.current?.getValue();
+    if (!formValues) return; // not valid
+    const { documentNumber, dateOfBirth, dateOfExpiry } = formValues;
+    this.initialValues = { documentNumber, dateOfBirth, dateOfExpiry };
+    this.props.setMRZKey(
       getMRZKey(
         documentNumber, 
         dayjs(dateOfBirth).format('YYMMDD'), 
         dayjs(dateOfExpiry).format('YYMMDD')
       )
     );
-  }, []);
-
-  return (
-    <View style={tw`px-2 pb-4`}>
-      <Card>
-        <Card.Content>
-          <Form
-            ref={formRef}
-            type={MRZData}
-            options={formOptions}
-          />
-        </Card.Content>
-        <Card.Actions>
-          <Button mode='contained' onPress={handleSubmit}>
-            Calculate MRZ Key
-          </Button>
-        </Card.Actions>
-      </Card>
-    </View>
-  );
+  }
+  render() {
+    return (
+      <View style={tw`px-2 pb-4`}>
+        <Card>
+          <Card.Content>
+            <Form
+              value={this.initialValues}
+              ref={this.formRef}
+              type={MRZData}
+              options={formOptions}
+            />
+          </Card.Content>
+          <Card.Actions>
+            <MRZScanner />
+            <Button mode='contained' onPress={this.handleSubmit}>
+              Calculate MRZ Key
+            </Button>
+          </Card.Actions>
+        </Card>
+      </View>
+    );
+  }
 }
 
 type DataGroup = { dataGroupName: string, rawData: string, decodedData: string };
@@ -301,7 +319,7 @@ export default function TabPassportScan() {
       <ScrollView contentContainerStyle={tw`pb-24`}>
         <List.AccordionGroup expandedId={expandedId} onAccordionPress={handleAccordionPress}>
           <List.Accordion title={`MRZ Key: ${mrzKey}`} id="mrz">
-            <MRZFormComponent setMRZKey={setMRZKey} />
+            <MRZFormComponent setMRZKey={setMRZKey} mrzKey={mrzKey} />
           </List.Accordion>
           <Divider />
           <List.Accordion title={scannedDataGroupList.length === 0 ? 'No data group scanned yet' : `${scannedDataGroupList.map(([k,v])=>k).join(', ')}`} 
