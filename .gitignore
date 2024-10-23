@@ -49,3 +49,7 @@ expo-env.d.ts
 # Lock Files
 yarn.lock
 package-lock.json
+
+# Android Credentials
+/credentials/
+/credentials.json
