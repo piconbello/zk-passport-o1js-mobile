@@ -24,7 +24,8 @@
       "permissions": [
         "android.permission.NFC"
       ],
-      "package": "com.corupta.zkpassporto1js"
+      "package": "com.corupta.zkpassporto1js",
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "bundler": "metro",
@@ -50,10 +51,18 @@
         {
           "ios": {
             "deploymentTarget": "15.0"
+          },
+          "android": {
+            "packagingOptions": {
+              "exclude": [
+                "META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+              ]
+            }
           }
         }
       ],
       "./withCSCAMasterList",
+      "./withGradleOverrides",
       "expo-localization"
     ],
     "experiments": {
@@ -66,6 +75,9 @@
       "eas": {
         "projectId": "34f55a25-5377-443b-9aef-8c14666b50d7"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/34f55a25-5377-443b-9aef-8c14666b50d7"
     }
   }
 }
