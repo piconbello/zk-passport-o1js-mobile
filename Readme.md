@@ -1,5 +1,14 @@
 # zk-passport-o1js
 
+# Branches
+* Main: Latest stable version. If you're testing, test from this branch.
+* Next: Latest code but unstable, might not build/compile even.
+* Poc-xxx: Stable proof of concept version
+
+## Changelog
+* poc-0.1.0: Added Android support.
+* poc-0.0.4: Made iOS working proof-of-concept for nfc read and webview proof gen.
+
 # Required Environment
 * Node >= 18
 * MacOS and XCode installed (for iOS development builds.)
