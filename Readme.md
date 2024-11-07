@@ -76,8 +76,8 @@ The third tab is the actual demo page.
 * The final according part is to test messaging with a webview. (Currently there's a webview for generating proof, and send to webview button sends the data to that webview as json. In our testing the webview usually crashed due to memory overflow, as our tested zkProgram was a big one. In the future we can create smaller zkPrograms and generate many mini-proofs, which can be verified&combined in a computer)
 
 # TODO
-- [ ] Write Readme
-- [ ] Document how to re-create `masterList.pem` in the future for certificate validation.
+- [x] Write Readme
+- [x] Document how to re-create `masterList.pem` in the future for certificate validation.
     - [x] Tested `masterList.pem` extracted from `icaopkd-002-complete-000284.ldif`
         Change folder to project root. Run `yarn generateCSCAMasterList /path/to/icaopkd-002-complete-000284.ldif` to generate.
 - [ ] Check/Ask Permissions for NFC/Camera if not permitted yet.
@@ -115,7 +115,7 @@ The third tab is the actual demo page.
 - [ ] Add timezone support.
 
 # Notes
-Heavily inspired by [zk-passport](https://github.com/zk-passport/openpassport) project.
+Heavily inspired by [zk-passport/openpassport](https://github.com/zk-passport/openpassport) project.
 
 
 # Used Toolchains
