@@ -24,7 +24,7 @@ Exact details can be found in [NFCPassportReader](https://github.com/corupta/NFC
 * Then run `npm run generateCSCAMasterList path/to/yourdownloaded.ldif` to generate `masterList.pem` in your current directory
 * Move the generated `masterList.pem` to `assets/masterList.pem`
 
-# How to RUn
+# How to Run
 
 ## Create a development build for iOS
 * Run `npm run ios` to create a development build and start expo server.
@@ -32,13 +32,13 @@ Exact details can be found in [NFCPassportReader](https://github.com/corupta/NFC
     * We decided to put ios and android folders into .gitignore and instead only apply modifications via expo plugins. That way, it is much more easier to maintain them.
 * If you have an open iOS Simulator, it will automatically install and start app in it.
 * Note that since, iOS Simulator doesn't have NFC Reading capability, you might want to test with a real iPhone. However, doing so requires an Apple developer account.
-    1- Make sure the build finished and it was at the stage where it opened iOS simulator
-    2- Open `ios/zkpassporto1js.xcworkspace` with XCode. (Make sure to open workspace and not project)
-    3- Choose `zkpassporto1js` Project from the left pane.
-    4- Open `Signing & Capabilities` tab.
-    5- Select a team. (Personal teams are NOT accepted for NFC capability)
-    6- From the top, choose your iOS device. (Make sure to enable developer mode on your phone and connect it to your Mac via cable.)
-    7- Press the run button. (It will build and install the app on your device. If it opens expo screen in mobile but won't start the app, make sure your iPhone is in the same network as your mac)
+    1. Make sure the build finished and it was at the stage where it opened iOS simulator
+    2. Open `ios/zkpassporto1js.xcworkspace` with XCode. (Make sure to open workspace and not project)
+    3. Choose `zkpassporto1js` Project from the left pane.
+    4. Open `Signing & Capabilities` tab.
+    5. Select a team. (Personal teams are NOT accepted for NFC capability)
+    6. From the top, choose your iOS device. (Make sure to enable developer mode on your phone and connect it to your Mac via cable.)
+    7. Press the run button. (It will build and install the app on your device. If it opens expo screen in mobile but won't start the app, make sure your iPhone is in the same network as your mac)
 ![xcode-screen](xcode-screen.png)
 
 ## Create a development build for Android
@@ -67,43 +67,43 @@ The third tab is the actual demo page.
 * The final according part is to test messaging with a webview. (Currently there's a webview for generating proof, and send to webview button sends the data to that webview as json. In our testing the webview usually crashed due to memory overflow, as our tested zkProgram was a big one. In the future we can create smaller zkPrograms and generate many mini-proofs, which can be verified&combined in a computer)
 
 # TODO
-- [] Write Readme
-- [] Document how to re-create `masterList.pem` in the future for certificate validation.
+- [ ] Write Readme
+- [ ] Document how to re-create `masterList.pem` in the future for certificate validation.
     - [x] Tested `masterList.pem` extracted from `icaopkd-002-complete-000284.ldif`
         Change folder to project root. Run `yarn generateCSCAMasterList /path/to/icaopkd-002-complete-000284.ldif` to generate.
-- [] Check/Ask Permissions for NFC/Camera if not permitted yet.
-- [] Implement NFC Scanner
+- [ ] Check/Ask Permissions for NFC/Camera if not permitted yet.
+- [ ] Implement NFC Scanner
     - [x] Implement for IOS
     - [x] Implement for Android
-    - [] Allow active authentication?
-- [] Implement MRZ Scanner
+    - [ ] Allow active authentication?
+- [ ] Implement MRZ Scanner
     - [ ] Implement for IOS
     - [ ] Implement for Android
-- [] Implement SDK Communication
-    - [] Create a node.js process
-    - [] Announce bonjour service
-    - [] Start a socket io server
-- [] Implement Async Storage
-- [] Implement Encrypted Storage
-- [] Implement UI
-    - [] Implement Passport Info Page
-        - [] Implement Scan MRZ Page
-        - [] Implement Scan NFC Page
-        - [] Implement Password Lock Page
-        - [] Implement Unlock Password Page
-        - [] Implement log secure (dont log on production but only in dev mode) for passport data etc.
-    - [] Implement Proof Generation Page
-    - [] Implement Previous Proofs Page
-        - [] Implement filterable/sortable page view (requested, proved, etc. and date)
-        - [] Useful to share chain view link if available (SDK might provide metadata about where the proof was used)
-        - [] Proof details popup/page
-    - [] Implement Help Button
-    - [] Implement Tutorial Carousel
-- [] Implement deep linking
+- [ ] Implement SDK Communication
+    - [ ] Create a node.js process
+    - [ ] Announce bonjour service
+    - [ ] Start a socket io server
+- [ ] Implement Async Storage
+- [ ] Implement Encrypted Storage
+- [ ] Implement UI
+    - [ ] Implement Passport Info Page
+        - [ ] Implement Scan MRZ Page
+        - [ ] Implement Scan NFC Page
+        - [ ] Implement Password Lock Page
+        - [ ] Implement Unlock Password Page
+        - [ ] Implement log secure (dont log on production but only in dev mode) for passport data etc.
+    - [ ] Implement Proof Generation Page
+    - [ ] Implement Previous Proofs Page
+        - [ ] Implement filterable/sortable page view (requested, proved, etc. and date)
+        - [ ] Useful to share chain view link if available (SDK might provide metadata about where the proof was used)
+        - [ ] Proof details popup/page
+    - [ ] Implement Help Button
+    - [ ] Implement Tutorial Carousel
+- [ ] Implement deep linking
 
 # Random TODO
-- [] Remove all moment and replace them with luxon
-- [] Add timezone support.
+- [ ] Remove all moment and replace them with luxon/dayjs/date-fns
+- [ ] Add timezone support.
 
 # Notes
 Heavily inspired by [zk-passport](https://github.com/zk-passport/openpassport) project.
