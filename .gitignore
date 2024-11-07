@@ -53,3 +53,6 @@ package-lock.json
 # Android Credentials
 /credentials/
 /credentials.json
+
+# Log Files
+*.log

@@ -1,12 +1,12 @@
 {
-  "name": "zk-passport-o1js",
+  "name": "zk-passport-o1js-mobile",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "generateCSCAMasterList": "python3 modules/custom-ios-passport-reader/ios/NFCPassportReader/scripts/extract.py",
+    "generateCSCAMasterList": "python3 modules/custom-passport-reader/ios/NFCPassportReader/scripts/extract.py",
     "web": "DARK_MODE=media expo start --web",
     "test": "jest --watchAll"
   },
@@ -81,5 +81,8 @@
         "react-native-screens@~3.31.1"
       ]
     }
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
