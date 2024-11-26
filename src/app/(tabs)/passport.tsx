@@ -1,6 +1,8 @@
 import NfcManager from 'react-native-nfc-manager';
 import * as Clipboard from 'expo-clipboard';
-
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+LogBox.ignoreAllLogs();//Ignore all log notifications
 import { serializeError } from 'serialize-error';
 
 import { PassportData, getMRZKey, scanPassport } from "@/modules/custom-passport-reader";
