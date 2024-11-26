@@ -56,3 +56,6 @@ package-lock.json
 
 # Log Files
 *.log
+
+
+nodejs-assets/build-native-modules-MacOS-helper-script-*.sh
