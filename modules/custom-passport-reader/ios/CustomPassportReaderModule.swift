@@ -48,7 +48,7 @@ public class CustomPassportReaderModule: Module {
         }
         
         do {
-          let passport = try await passportReader.readPassport( mrzKey: mrzKey, useExtendedMode: false,  customDisplayMessage:customMessageHandler)
+          let passport = try await passportReader.readPassport( mrzKey: mrzKey, skipPACE: true, useExtendedMode: false, customDisplayMessage:customMessageHandler)
           var dump = passport.dumpPassportData(selectedDataGroups: DataGroupId.allCases, includeActiveAuthenticationData: true)
 
           var ret = [String:String]()
