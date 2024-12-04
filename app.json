@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "zk-passport-o1js",
+    "schema": "zk-passport-o1js",
     "slug": "zk-passport-o1js",
     "version": "1.0.0",
     "orientation": "portrait",
