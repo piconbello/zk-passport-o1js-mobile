@@ -21,6 +21,7 @@ import 'tcomb-form-native-cr';
 import t from 'tcomb-validation';
 import ContractWebView from '@/components/contractWebView';
 import MRZScanner from '@/components/mrzScanner';
+import ExportButton from '@/components/ExportButton';
 //@ts-ignore
 const Form = t.form.Form;
 
@@ -158,31 +159,6 @@ function ScannedDataGroupList({ scannedDataGroupList }: ScannedDataGroupListProp
   //     )}
   //   />
   // );
-}
-
-type ExportButtonProps = { mrzKey: string, scannedDataGroupList: [string, string][], openPassportData: any, webViewLogs: object[] };
-function ExportButton({ mrzKey, scannedDataGroupList, openPassportData, webViewLogs }: ExportButtonProps) {
-  const toaster = useToast();
-
-  const handleExport = useCallback(() => {
-    const jsonString = JSON.stringify({ 
-      mrzKey, scannedDataGroupList, openPassportData, webViewLogs
-    }, null, 2);
-    Clipboard.setStringAsync(jsonString)
-      .then(() => {
-        toaster.show({ type: 'success', message: 'All data copied to clipboard' });
-      }).catch((e) => {
-        toaster.show({ type: 'error', message: `Failed to copy to clipboard: ${e.message}` });
-        console.log(e);
-      })
-  }, [mrzKey, scannedDataGroupList, openPassportData]);
-
-  return (
-    <FAB icon='content-copy' variant="secondary" size='small' mode='elevated'
-      label='Copy All' onPress={handleExport}
-      style={tw`absolute left-4 bottom-2 rounded-full`}
-    />
-  );
 }
 
 type ScanButtonProps = { mrzKey: string, onPassportScanned: (data: any)=>void };

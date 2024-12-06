@@ -6,11 +6,12 @@ const { NKey } = require('../nkey');
 
 const socketIOServerOptions = {
   path: '/socket.io',
+  transports: [ "websocket" ],
   pingInterval: 10000,
   pingTimeout: 5000,
   cookie: false,
   cors: {
-    // credentials: true
+    credentials: true
   },
   /*origins: "*:*",*/
   connectionStateRecovery: {

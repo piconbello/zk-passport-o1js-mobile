@@ -35,7 +35,7 @@ export const unstable_settings = {
 import { enGB, registerTranslation } from 'react-native-paper-dates';
 registerTranslation('en-GB', enGB);
 
-import { useNodeJSCommunication } from '@/helpers/nodejsWorker';
+import { keepNodeJSCommunicationLifecycle } from '@/helpers/nodejsWorker';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -72,7 +72,7 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? Themes.DarkTheme : Themes.LightTheme;
 
-  useNodeJSCommunication();
+  keepNodeJSCommunicationLifecycle();
 
   return (
     <GestureHandlerRootView>
@@ -81,8 +81,9 @@ function RootLayoutNav() {
           <ToastProvider>
             <BottomSheetModalProvider>
               <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="Home" options={{ headerShown: false }} />
+                <Stack.Screen name="Modal" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="Proof Request"  />
               </Stack>
             </BottomSheetModalProvider>
           </ToastProvider>

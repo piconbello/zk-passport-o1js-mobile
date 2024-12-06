@@ -27,18 +27,31 @@ const lifecycle = new ZkPassportLifecycle(customLog);
 
 const gracefulExitHandler = async (signal) => {
   try {
-    customLog(`gracefulExitHandler started due to signal ${signal}`);
+    customLog(`\ngracefulExitHandler started due to signal ${signal}`);
   } catch (e) {}
   try {
     await lifecycle.destructor();
     customLog(`gracefulExitHandler finished.`);
-  } catch (e) {}
+  } catch (e) {
+    customLog(`gracefulExitHandler error: ${e.message}`);
+  }
   process.exit(128+signal);
 }
 
 process.on('SIGINT', gracefulExitHandler)
 process.on('SIGTERM', gracefulExitHandler)
 process.on('SIGQUIT', gracefulExitHandler)
+
+rn_bridge.app.on('pause', (pauseLock) => {
+  lifecycle.stop()
+    .then(() => {
+      customLog('Lifecycle stopped due to app pause');
+    }).catch((err) => {
+      customLog(`Failed to stop lifecycle (app pause): ${err.message}`);
+    }).finally(() => {
+      pauseLock.release();
+    });
+});
 
 rn_bridge.channel.on('startLifecycle', () => {
   lifecycle.start()
@@ -80,6 +93,3 @@ rn_bridge.channel.on('sendProofDataToRoom', (uuid, room, proofData) => {
       rn_bridge.channel.post('sendProofDataToRoom', uuid, false);
     });
 });
-
-lifecycle.start()
-  .then(() => customLog('Lifecycle started successfully'));

@@ -18,6 +18,16 @@ class BonjourDiscovery {
 
   async destructor() {
     this._makeLog('Destructing BonjourDiscovery...');
+    await Promise.all([
+      Array.from(this._publishedServices.entries()).map(
+        ([serializedServer, service]) => 
+          service.end().then(
+              () => this._makeLog(`Ended ${serializedServer} service`)
+            ).catch(
+              err => this._makeLog(`Error ending service: ${err.message}`)
+            )
+      )
+    ])
     try {
       await this._responder.shutdown();
     } catch (err) {

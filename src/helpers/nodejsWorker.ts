@@ -16,13 +16,21 @@ export class NodeJSCommunication {
     nodejs.start('main.js');
     nodejs.channel.post('message', 'SAMPLE LOG FROM RN MOBILE TO NODEJS WORKER');
     console.log('nodejs.channel.post');
-    setTimeout(() => {
-      // TODO WE CAN IMPROVE IT IN THE FUTURE TO OPEN SERVER ONLY WHEN NEEDED MAYBE?
-      nodejs.channel.post('startLifecycle');
-      // nodejs.channel.addListener('startLifecycle', (started) => {});
-      // nodejs.channel.post('stopLifecycle');
-      // nodejs.channel.addListener('stopLifecycle', (stopped) => {});
-    }, 100);
+    // setTimeout(() => {
+    //   // TODO WE CAN IMPROVE IT IN THE FUTURE TO OPEN SERVER ONLY WHEN NEEDED MAYBE?
+    //   nodejs.channel.post('startLifecycle');
+    //   // nodejs.channel.addListener('startLifecycle', (started) => {});
+    //   // nodejs.channel.post('stopLifecycle');
+    //   // nodejs.channel.addListener('stopLifecycle', (stopped) => {});
+    // }, 100);
+  }
+
+  public startLifecycle = () => {
+    nodejs.channel.post('startLifecycle');
+  }
+
+  public stopLifecycle = () => {
+    nodejs.channel.post('stopLifecycle');
   }
 
   private onMessage = (...args: any[]) => {
@@ -87,6 +95,18 @@ type SocketData = {
 export const useNodeJSCommunication = () => {
   return NodeJSCommunication.getInstance();
 }
+
+export const keepNodeJSCommunicationLifecycle = () => {
+  const nodeJSCommunication = useNodeJSCommunication();
+  
+  useEffect(() => {
+    nodeJSCommunication.startLifecycle();
+    return () => {
+      nodeJSCommunication.stopLifecycle();
+    }
+  }, []);
+}
+
 export const useSocketDataInRoom = (room: string) => {
   const [socketDataInRoom, setSocketDataInRoom] = useState<SocketData[]>([]);
   const roomRef = useRef(room);
