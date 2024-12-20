@@ -1,4 +1,5 @@
-// entrance file from computer.
+// entrance file from computer. use as node test.js proofRequestUUID
+
 const { ZkPassportLifecycle } = require('./lifecycle');
 
 const lifecycle = new ZkPassportLifecycle(console.log);

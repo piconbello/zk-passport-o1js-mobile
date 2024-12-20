@@ -3,6 +3,7 @@ const msgpack = require('notepack.io');
 const customSocketIOParser = require('socket.io-msgpack-parser');
 
 const { NKey } = require('../nkey');
+const { bytesToHex } = require('@noble/curves/abstract/utils');
 
 const socketIOServerOptions = {
   path: '/socket.io',
@@ -35,11 +36,7 @@ class SocketIOServer {
     this._io.use(this._authMiddleware);
   }
 
-  setServerName(serverName) {
-    this._serverName = serverName;
-  }
-
-  _authenticateSDK(tokenParts) {
+  _authenticateSDK(tokenParts, hostname) {
     const publicKey = Buffer.from(tokenParts[0]);
     const payloadBuffer = Buffer.from(tokenParts[1]);
     const signature = Buffer.from(tokenParts[2]);
@@ -52,21 +49,25 @@ class SocketIOServer {
     if (Date.now() - timestamp > 10 * 1000) {
       throw new Error('Token expired');
     }
-    if (serverName!== this._serverName) {
-      console.log('servername', serverName, this._serverName);
-      throw new Error('Invalid server name');
+    if (!serverName.startsWith(bytesToHex(publicKey))) {
+      // server name is concat(pubkey, proofRequestTimestamp);
+      throw new Error('Public key does not match server name');
     }
-    const id = Buffer.from(publicKey).toString('hex');
-    this._makeLog(`An SDK (#${id}) connected from c:${clientName} ~ ${clientOrigin}`);
+    if (!(hostname || '').includes(serverName)) {
+      console.log('servername', serverName, 'host', hostname);
+      throw new Error('Invalid host name');
+    }
+    const uuid = serverName;
+    this._makeLog(`An SDK (#${uuid}) connected from c:${clientName} ~ ${clientOrigin}`);
     const details = { clientName, clientOrigin };
-    return ['SDK', id, details];
+    return ['SDK', uuid, details];
   }
 
-  _authenticateToken(token) {
+  _authenticateToken(token, hostname) {
     if (!token) throw new Error('No token provided');
     switch(token[0].toUpperCase()) {
       case 'SDK':
-        return this._authenticateSDK(token.slice(1));
+        return this._authenticateSDK(token.slice(1), hostname);
       default:
         throw new Error(`Unknown auth method ${token[0]}`);
     }
@@ -74,15 +75,16 @@ class SocketIOServer {
 
   _authMiddleware(socket, next) {
     const token = socket?.handshake?.auth?.token;
+    const hostname = socket?.request?.headers?.host;
     // console.log('token is', socket.handshake.auth);
     try {
-      const [type, id, details] = this._authenticateToken(token);
+      const [type, uuid, details] = this._authenticateToken(token, hostname);
       // socket.data.token = token;
       socket.data.type = type;
-      socket.data.id = id;
+      socket.data.uuid = uuid;
       socket.data.details = details;
       socket.join(`/${type}`);
-      socket.join(`/${type}/${id}`);
+      socket.join(`/${type}/${uuid}`);
       return next();
     } catch (e) {
       this._makeLog(`Unauthorized socket connection due to ${e.message}`);

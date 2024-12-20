@@ -21,11 +21,20 @@ class ZkPassportLifecycle {
     const dynamicPort = new DynamicPortListenHelper(this._makeLog, this._server);
     this._port = await dynamicPort.listen();
     this._makeLog(`Server started on port ${this._port}`);
-    this._bonjourDiscovery.publish(this._port, this._serverName);
+    this.publish(this._serverName);
+  }
+
+  publishDNS(id) {
+    this._makeLog(`Published ${id}.local:${this._port}`);
+    this._bonjourDiscovery.publish(this._port, id);
+  }
+
+  unpublishDNS(id) {
+    this._bonjourDiscovery.unpublish(this._port, id);
   }
 
   async stop() {
-    this._bonjourDiscovery.unpublish(this._port, this._serverName);
+    this._bonjourDiscovery.unpublishAll();
     this._server.close();
   }
 

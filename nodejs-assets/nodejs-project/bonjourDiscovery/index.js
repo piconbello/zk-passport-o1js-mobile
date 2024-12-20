@@ -91,6 +91,11 @@ class BonjourDiscovery {
       this._destroyService(serializedServer, service);
     }
   }
+
+  unpublishAll() {
+    this._publishedServices.forEach((service, serializedServer) => this._destroyService(serializedServer, service));
+    this._publishedServices.clear();
+  }
 }
 
 module.exports.BonjourDiscovery = BonjourDiscovery;

@@ -75,6 +75,14 @@ rn_bridge.channel.on('stopLifecycle', () => {
    });
 })
 
+rn_bridge.channel.on('publishDNS', (id) => {
+  lifecycle.publishDNS(id)
+});
+
+rn_bridge.channel.on('unpublishDNS', (id) => {
+  lifecycle.unpublishDNS(id)
+});
+
 rn_bridge.channel.on('socketDataInRoom', (room) => {
   lifecycle.requestSocketDataInRoom(room)
     .then((res) => {

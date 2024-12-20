@@ -1,11 +1,14 @@
 class DynamicPortListenHelper {
   constructor(makeLog, server) {
     this._makeLog = makeLog;
-    // TRY TO FIND AN AVAILABLE PORT FROM THE DYNAMIC RANGE (49152-65535)
+    // https://stackoverflow.com/questions/10476987/best-tcp-port-number-range-for-internal-applications
+    // We use 38866 - 39680
     this._server = server;
-    this._dynamicPortRangeStart = (3<<14);
-    this._nofPotentialPorts = (1<<14);
-    this._initialPortIndex = ~~(Math.random() * this._nofPotentialPorts);
+    // this._dynamicPortRangeStart = 38866;
+    // this._nofPotentialPorts = 39680 - 38866;
+    this._dynamicPortRangeStart = 38959; // randomly chosen to start from this one.
+    this._nofPotentialPorts = 10; // allow up to 10 ports for absurd reliability :)
+    this._initialPortIndex = 0;
   }
   async listen(callback) {
     let portIndex = this._initialPortIndex;

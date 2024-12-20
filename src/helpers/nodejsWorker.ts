@@ -33,16 +33,16 @@ export class NodeJSCommunication {
     nodejs.channel.post('stopLifecycle');
   }
 
-  private onMessage = (...args: any[]) => {
-    console.log('LOG FROM NODEJS: ', ...args);
+  public publishDNS = (id: string) => {
+    nodejs.channel.post('publishDNS', id);
   }
 
-  private onSocketDataInRoom = (room: string, data: SocketData[]) => {
-    const promise = this.socketDataInRoomPromises.get(room);
-    if (promise) {
-      promise.resolve(data);
-      this.socketDataInRoomPromises.delete(room);
-    }
+  public unpublishDNS = (id: string) => {
+    nodejs.channel.post('unpublishDNS', id);
+  }
+
+  private onMessage = (...args: any[]) => {
+    console.log('LOG FROM NODEJS: ', ...args);
   }
 
   public requestSocketDataInRoom = (room: string): Promise<SocketData[]> => {
@@ -54,13 +54,11 @@ export class NodeJSCommunication {
     return promise;
   }
 
-  private onProofDataToRoom = (uuid: string, result: boolean) => {
-    const promise = this.proofDataToRoomPromises.get(uuid);
+  private onSocketDataInRoom = (room: string, data: SocketData[]) => {
+    const promise = this.socketDataInRoomPromises.get(room);
     if (promise) {
-      promise.resolve(result);
-      this.proofDataToRoomPromises.delete(uuid);
-    } else {
-      console.log(`received proof acknowledge for non-existent UUID: ${uuid}`);
+      promise.resolve(data);
+      this.socketDataInRoomPromises.delete(room);
     }
   }
 
@@ -75,6 +73,16 @@ export class NodeJSCommunication {
     return promise;
   }
 
+  private onProofDataToRoom = (uuid: string, result: boolean) => {
+    const promise = this.proofDataToRoomPromises.get(uuid);
+    if (promise) {
+      promise.resolve(result);
+      this.proofDataToRoomPromises.delete(uuid);
+    } else {
+      console.log(`received proof acknowledge for non-existent UUID: ${uuid}`);
+    }
+  }
+
   static getInstance() {
     if (!this._instance) {
       this._instance = new NodeJSCommunication();
@@ -85,7 +93,7 @@ export class NodeJSCommunication {
 
 type SocketData = {
   type: 'SDK',
-  id: string,
+  uuid: string,
   detail: {
     clientOrigin: string,
     clientName: string,
@@ -107,9 +115,16 @@ export const keepNodeJSCommunicationLifecycle = () => {
   }, []);
 }
 
-export const useSocketDataInRoom = (room: string) => {
+export const sendProofDataForUUID = (encryptedResponseBuffer: Uint8Array, uuid: string, type: string = 'SDK'): Promise<boolean> => {
+  const nodeJSCommunication = NodeJSCommunication.getInstance();
+  const room = `/${type}/${uuid}`;
+  return nodeJSCommunication.sendProofDataToRoom(room, encryptedResponseBuffer);
+}
+
+export const useSocketDataForUUID = (uuid: string, type: string = 'SDK') => {
   const [socketDataInRoom, setSocketDataInRoom] = useState<SocketData[]>([]);
-  const roomRef = useRef(room);
+  const room = `/${type}/${uuid}`;
+  const roomRef = useRef<string>();
   roomRef.current = room;
   const nodeJSCommunication = useNodeJSCommunication();
   
@@ -124,12 +139,23 @@ export const useSocketDataInRoom = (room: string) => {
           }
         })
     }
-    timeout = setTimeout(reloadSocketDataInRoom, 1000);
+    timeout = setTimeout(reloadSocketDataInRoom, 0);
 
     return () => {
       clearTimeout(timeout);
+      roomRef.current = '';
     }
   }, [room]);
   
   return socketDataInRoom;
+}
+
+export const useSocketPublish = (uuid: string) => {
+  const nodeJSCommunication = useNodeJSCommunication();
+  useEffect(() => {
+    nodeJSCommunication.publishDNS(uuid);
+    return () => {
+      nodeJSCommunication.unpublishDNS(uuid);
+    }
+  }, [uuid]);
 }
