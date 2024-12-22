@@ -6,12 +6,12 @@ import { AdvancedPromise, createAdvancedPromise } from './createAdvancedPromise'
 export class NodeJSCommunication {
   private static _instance: NodeJSCommunication;
   private socketDataInRoomPromises = new Map<string, AdvancedPromise<SocketData[]>>();
-  private proofDataToRoomPromises = new Map<string, AdvancedPromise<boolean>>();
+  private proofResponseToRoomPromises = new Map<string, AdvancedPromise<boolean>>();
 
   private constructor() {
     nodejs.channel.addListener('message', this.onMessage);
     nodejs.channel.addListener('socketDataInRoom', this.onSocketDataInRoom);
-    nodejs.channel.addListener('proofDataToRoom', this.onProofDataToRoom);
+    nodejs.channel.addListener('proofResponseToRoom', this.onProofResponseToRoom);
     console.log('nodejs.start');
     nodejs.start('main.js');
     nodejs.channel.post('message', 'SAMPLE LOG FROM RN MOBILE TO NODEJS WORKER');
@@ -62,22 +62,22 @@ export class NodeJSCommunication {
     }
   }
 
-  public sendProofDataToRoom = (room: string, proofBuffer: Uint8Array): Promise<boolean> => {
+  public sendProofResponseToRoom = (room: string, proofBuffer: Uint8Array): Promise<boolean> => {
     const uuid = uuidv4();
     const proofHex = Array.from(proofBuffer).map(byte => byte.toString(16).padStart(2, '0')).join('');
-    let promise = this.proofDataToRoomPromises.get(uuid);
+    let promise = this.proofResponseToRoomPromises.get(uuid);
     if (promise) return Promise.reject(new Error('UUID not unique??'));
     promise = createAdvancedPromise<boolean>(60000);
-    this.proofDataToRoomPromises.set(uuid, promise);
-    nodejs.channel.post(`sendProofDataToRoom`, uuid, room, proofHex);
+    this.proofResponseToRoomPromises.set(uuid, promise);
+    nodejs.channel.post(`proofResponseToRoom`, uuid, room, proofHex);
     return promise;
   }
 
-  private onProofDataToRoom = (uuid: string, result: boolean) => {
-    const promise = this.proofDataToRoomPromises.get(uuid);
+  private onProofResponseToRoom = (uuid: string, result: boolean) => {
+    const promise = this.proofResponseToRoomPromises.get(uuid);
     if (promise) {
       promise.resolve(result);
-      this.proofDataToRoomPromises.delete(uuid);
+      this.proofResponseToRoomPromises.delete(uuid);
     } else {
       console.log(`received proof acknowledge for non-existent UUID: ${uuid}`);
     }
@@ -115,10 +115,10 @@ export const keepNodeJSCommunicationLifecycle = () => {
   }, []);
 }
 
-export const sendProofDataForUUID = (encryptedResponseBuffer: Uint8Array, uuid: string, type: string = 'SDK'): Promise<boolean> => {
+export const sendProofResponseForUUID = (encryptedResponseBuffer: Uint8Array, uuid: string, type: string = 'SDK'): Promise<boolean> => {
   const nodeJSCommunication = NodeJSCommunication.getInstance();
   const room = `/${type}/${uuid}`;
-  return nodeJSCommunication.sendProofDataToRoom(room, encryptedResponseBuffer);
+  return nodeJSCommunication.sendProofResponseToRoom(room, encryptedResponseBuffer);
 }
 
 export const useSocketDataForUUID = (uuid: string, type: string = 'SDK') => {
@@ -150,7 +150,7 @@ export const useSocketDataForUUID = (uuid: string, type: string = 'SDK') => {
   return socketDataInRoom;
 }
 
-export const useSocketPublish = (uuid: string) => {
+export const useSocketPublishDNS = (uuid: string) => {
   const nodeJSCommunication = useNodeJSCommunication();
   useEffect(() => {
     nodeJSCommunication.publishDNS(uuid);

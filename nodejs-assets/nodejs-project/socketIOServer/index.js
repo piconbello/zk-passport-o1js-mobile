@@ -44,8 +44,8 @@ class SocketIOServer {
   }
 
   _authenticateSDK(tokenParts, hostname) {
-    this._makeLog('tokenparts', tokenParts);
-    this._makeLog('tokenpart instance of arraybuffer', tokenParts[0].constructor.name);
+    // this._makeLog('tokenparts', tokenParts);
+    // this._makeLog('tokenpart instance of arraybuffer', tokenParts[0].constructor.name);
     console.log(new Uint8Array(tokenParts[0]));
     const publicKey = Buffer.from(tokenParts[0]);
     const payloadBuffer = Buffer.from(tokenParts[1]);
@@ -136,9 +136,10 @@ class SocketIOServer {
     return sockets.map(socket => socket.data);
   }
 
-  async sendProofDataToRoom(room, proofData) {
+  async sendProofResponseToRoom(room, proofResponseHex) {
+    const proofResponse = hexToBytes(proofResponseHex);
     return new Promise((resolve, reject) => {
-      this._io.timeout(60*1000).to(`${room}`).emit('proofData', proofData, (err) => {
+      this._io.timeout(60*1000).to(`${room}`).emit('proofResponse', proofResponse, (err) => {
         if (err) return reject(err);
         resolve();
       });

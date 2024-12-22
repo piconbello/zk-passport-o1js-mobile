@@ -86,18 +86,18 @@ rn_bridge.channel.on('unpublishDNS', (id) => {
 rn_bridge.channel.on('socketDataInRoom', (room) => {
   lifecycle.requestSocketDataInRoom(room)
     .then((res) => {
-      rn_bridge.channel.post('socketDataInRoom', res);
+      rn_bridge.channel.post('socketDataInRoom', room, res);
     }).catch((err) => {
       customLog(`Error fetching socket data in room ${room}: ${err.message}`);
     });
 })
 
-rn_bridge.channel.on('sendProofDataToRoom', (uuid, room, proofData) => {
-  lifecycle.sendProofDataToRoom(room, proofData)
-   .then((res) => {
-      rn_bridge.channel.post('sendProofDataToRoom', uuid, res);
+rn_bridge.channel.on('proofResponseToRoom', (uuid, room, proofResponseHex) => {
+  lifecycle.sendProofResponseToRoom(room, proofResponseHex)
+   .then(() => {
+      rn_bridge.channel.post('proofResponseToRoom', uuid, true);
     }).catch((err) => {
       customLog(`Error sending proof data to room ${room}: ${err.message}`);
-      rn_bridge.channel.post('sendProofDataToRoom', uuid, false);
+      rn_bridge.channel.post('proofResponseToRoom', uuid, false);
     });
 });

@@ -1,4 +1,4 @@
-import { ProofRequest } from 'zk-passport-o1js-sdk';
+import { ProofRequest } from '@/helpers/zkPassportSDK';
 import useRefMemo from "./useRefMemo"
 
 export const useProofRequest = (proofRequestToken: string): ProofRequest|null => {

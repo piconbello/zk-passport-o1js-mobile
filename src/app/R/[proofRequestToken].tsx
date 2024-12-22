@@ -1,6 +1,5 @@
 import ExportButton from '@/components/ExportButton';
-import { useNodeJSCommunication, useSocketDataForUUID, sendProofDataForUUID, useSocketPublish } from '@/helpers/nodejsWorker';
-import { ProofRequestIntent } from '@/helpers/proofRequest';
+import { useNodeJSCommunication, useSocketDataForUUID, sendProofResponseForUUID, useSocketPublishDNS } from '@/helpers/nodejsWorker';
 import { useProofRequest } from '@/hooks/useProofRequest';
 import useRefMemo from '@/hooks/useRefMemo';
 import tw from '@/tw';
@@ -9,12 +8,12 @@ import moment from 'moment';
 import { useCallback, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import { Button, Card, Text } from 'react-native-paper';
-import { ProofRequest, ProofResponse, ProofResponseData, ProofResponseDataOptions } from 'zk-passport-o1js-sdk';
+import { ProofRequest, ProofResponse, ProofResponseData, ProofResponseDataOptions } from '@/helpers/zkPassportSDK';
 
 type ProofResponseCardProps = { proofResponse: ProofResponse };
 function ProofResponseCard({ proofResponse }: ProofResponseCardProps) {
 
-  useSocketPublish(proofResponse.uuid);
+  useSocketPublishDNS(proofResponse.uuid);
 
   const connectedSockets = useSocketDataForUUID(proofResponse.uuid);
 
@@ -24,7 +23,7 @@ function ProofResponseCard({ proofResponse }: ProofResponseCardProps) {
   const sendProof = useCallback(() => {
     if (sending) return;
     setSending(true);
-    sendProofDataForUUID(proofResponse.toEncryptedBuffer(), proofResponse.uuid)
+    sendProofResponseForUUID(proofResponse.toEncryptedBuffer(), proofResponse.uuid)
      .then((success) => {
         setSent(success);
         setSending(false);
@@ -43,7 +42,7 @@ function ProofResponseCard({ proofResponse }: ProofResponseCardProps) {
         </Text>
         {connectedSockets.map((socket) => (
           <Text style={tw`font-mono px-2 pb-4`}>
-            {JSON.stringify(socket.detail, null, 2)}
+            {JSON.stringify(socket, null, 2)}
           </Text>
         ))}
       </Card.Content>
