@@ -20,7 +20,11 @@ process.on('SIGTERM', gracefulExitHandler)
 process.on('SIGQUIT', gracefulExitHandler)
 
 lifecycle.start()
-  .then(() => console.log('Lifecycle started successfully'));
+  .then(() => {
+    console.log('Lifecycle started successfully');
+    lifecycle.publishDNS(process.argv[2])
+    console.log('Published DNS successfully', process.argv[2]);
+  });
 
 setInterval(() => {
   lifecycle.requestSocketDataInRoom('/SDK')

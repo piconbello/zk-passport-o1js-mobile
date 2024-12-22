@@ -16,12 +16,9 @@ class ZkPassportLifecycle {
   }
 
   async start() {
-    this._serverName = randomBytes(16).toString('hex');
-    this._socketIOServer.setServerName(this._serverName);
     const dynamicPort = new DynamicPortListenHelper(this._makeLog, this._server);
     this._port = await dynamicPort.listen();
     this._makeLog(`Server started on port ${this._port}`);
-    this.publish(this._serverName);
   }
 
   publishDNS(id) {

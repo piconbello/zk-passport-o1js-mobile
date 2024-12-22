@@ -1,1 +1,2 @@
+require('./webCrypto');
 require('./BottomNavigator');

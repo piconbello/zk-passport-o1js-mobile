@@ -1,9 +1,15 @@
+// IT MIGHT BE NICE TO REFACTOR THIS FILE SOMETIME IN THE FUTURE
 const socketIO = require('socket.io');
-const msgpack = require('notepack.io');
-const customSocketIOParser = require('socket.io-msgpack-parser');
+const msgpack = require('msgpack-lite');
+let BASE36;
+import('@thi.ng/base-n').then(b => {
+  BASE36 = b.BASE36; 
+  // NOT THE BEST WAY OF IMPORTING, BUT WOULD WORK BC THERE ARE OTHER ASYNC OPS BEFORE IT IS USED.
+})
+// const customSocketIOParser = require('socket.io-msgpack-parser');
 
 const { NKey } = require('../nkey');
-const { bytesToHex } = require('@noble/curves/abstract/utils');
+const { bytesToHex, hexToBytes, equalBytes } = require('@noble/curves/abstract/utils');
 
 const socketIOServerOptions = {
   path: '/socket.io',
@@ -14,6 +20,7 @@ const socketIOServerOptions = {
   cors: {
     credentials: true
   },
+  // cors: true,
   /*origins: "*:*",*/
   connectionStateRecovery: {
     // the backup duration of the sessions and the packets
@@ -30,13 +37,16 @@ class SocketIOServer {
     this._authMiddleware = this._authMiddleware.bind(this);
     this._io = new socketIO.Server({
       ...socketIOServerOptions,
-      parser: customSocketIOParser,
+      // parser: customSocketIOParser,
       // withCredentials: true
     });
     this._io.use(this._authMiddleware);
   }
 
   _authenticateSDK(tokenParts, hostname) {
+    this._makeLog('tokenparts', tokenParts);
+    this._makeLog('tokenpart instance of arraybuffer', tokenParts[0].constructor.name);
+    console.log(new Uint8Array(tokenParts[0]));
     const publicKey = Buffer.from(tokenParts[0]);
     const payloadBuffer = Buffer.from(tokenParts[1]);
     const signature = Buffer.from(tokenParts[2]);
@@ -49,8 +59,14 @@ class SocketIOServer {
     if (Date.now() - timestamp > 10 * 1000) {
       throw new Error('Token expired');
     }
-    if (!serverName.startsWith(bytesToHex(publicKey))) {
-      // server name is concat(pubkey, proofRequestTimestamp);
+    console.log('serverName', serverName);
+    const proofRequestUUIDSize = Math.floor(
+      serverName.length * Math.log(36) / Math.log(256)
+    );
+    const proofRequestUUIDBuffer = new Uint8Array(proofRequestUUIDSize);
+    BASE36.decodeBytes(serverName.toUpperCase(), proofRequestUUIDBuffer);
+    
+    if (!equalBytes(proofRequestUUIDBuffer.subarray(0, publicKey.length), publicKey)) {
       throw new Error('Public key does not match server name');
     }
     if (!(hostname || '').includes(serverName)) {
@@ -65,11 +81,13 @@ class SocketIOServer {
 
   _authenticateToken(token, hostname) {
     if (!token) throw new Error('No token provided');
-    switch(token[0].toUpperCase()) {
+    const [type, tokenData] = token.split(/\s+/g);
+    const tokenParts = msgpack.decode(hexToBytes(tokenData))
+    switch(type.toUpperCase()) {
       case 'SDK':
-        return this._authenticateSDK(token.slice(1), hostname);
+        return this._authenticateSDK(tokenParts, hostname);
       default:
-        throw new Error(`Unknown auth method ${token[0]}`);
+        throw new Error(`Unknown auth method ${type}`);
     }
   }
 
@@ -87,7 +105,7 @@ class SocketIOServer {
       socket.join(`/${type}/${uuid}`);
       return next();
     } catch (e) {
-      this._makeLog(`Unauthorized socket connection due to ${e.message}`);
+      this._makeLog(`Unauthorized socket connection due to ${e.message} ${e.stack}`);
       const error = new Error('Authentication failed');
       error.status = 401;
       return next(error);
