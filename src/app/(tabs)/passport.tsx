@@ -66,12 +66,26 @@ class MRZFormComponent extends React.PureComponent<MRZFormProps> {
     super(props);
     this.formRef = createRef();
     if (this.props.mrzKey) {
-      this.initialValues = {
-        documentNumber: props.mrzKey.substring(0, 9),
-        dateOfBirth: moment(props.mrzKey.substring(10, 16), 'YYMMDD').toDate(),
-        dateOfExpiry: moment(props.mrzKey.substring(17, 23), 'YYMMDD').toDate(),
-      };
+      this.setInitialValuesFromMRZKey(this.props.mrzKey);
     }
+  }
+  
+  setInitialValuesFromMRZKey = (mrzKey: string) => {
+    this.initialValues = {
+      documentNumber: mrzKey.substring(0, 9),
+      dateOfBirth: moment(mrzKey.substring(10, 16), 'YYMMDD').toDate(),
+      dateOfExpiry: moment(mrzKey.substring(17, 23), 'YYMMDD').toDate(),
+    };
+  }
+
+  handleScan = (mrz: string) => {
+    const mrzKey = getMRZKey(
+      mrz.substring(44, 53),
+      mrz.substring(57, 63),
+      mrz.substring(65, 71)
+    );
+    this.setInitialValuesFromMRZKey(mrzKey);
+    this.props.setMRZKey(mrzKey);
   }
 
   handleSubmit = () => {
@@ -100,7 +114,7 @@ class MRZFormComponent extends React.PureComponent<MRZFormProps> {
             />
           </Card.Content>
           <Card.Actions>
-            <MRZScanner />
+            <MRZScanner onMRZRead={this.handleScan} />
             <Button mode='contained' onPress={this.handleSubmit}>
               Calculate MRZ Key
             </Button>

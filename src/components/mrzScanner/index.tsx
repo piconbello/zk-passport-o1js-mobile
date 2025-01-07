@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import MrzReader, { CameraSelector, DocType } from 'react-native-mrz-reader';
+import MrzReader, { CameraSelector, DocType } from '@corupta/react-native-mrz-reader';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 
 import { Button, Text } from 'react-native-paper';
@@ -8,7 +8,7 @@ import { Button, Text } from 'react-native-paper';
 // TODO REQUEST PERMISSION HERE.
 
 type MRZScannerProps = {
-
+  onMRZRead?: (mrz: string) => void,
 }
 type MRZScannerState = {
   isScannerRunning: boolean,
@@ -29,16 +29,18 @@ class MRZScanner extends React.PureComponent<MRZScannerProps, MRZScannerState> {
   }
   componentWillUnmount(): void {
   }
+  
 
-  handleSuccessfulScan = (body) => {
+  handleSuccessfulScan = (mrz: string) => {
     this.stopScanner();
-    console.log('Successful scan:', JSON.stringify(body));
+    console.log('Successful MRZ scan:', JSON.stringify(mrz));
     this.bottomSheetRef?.current?.dismiss();
     this.setState({ isScannerRunning: false });
+    this.props.onMRZRead?.(mrz);
   }
 
-  handleSheetChange = (index) => {
-    console.log('Bottom sheet change:', index);
+  handleSheetChange = (index: any) => {
+    // console.log('Bottom sheet change:', index);
     if (index === -1) {
       this.setState({ isScannerRunning: false });
     } else {

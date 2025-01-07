@@ -135,8 +135,8 @@ Allows easily adding tailwind style classes to components.
 #### react-native-nfc-manager
 Check if device has nfc capabilities
 
-#### react-native-passport-reader
-Passport reader for android only
+#### @corupta/react-native-mrz-reader
+Created a new package for mrz scanning via camera, forked from `react-native-mrz-reader` which was android only.
 
 #### NFCPassportReader
 Passport reader for ios (native module)
