@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.corupta.zkpassporto1js",
+      "bundleIdentifier": "com.piconbello.zkpassporto1js",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan MRZ."
       }
@@ -40,9 +40,17 @@
     "plugins": [
       "expo-router",
       [
+        "react-native-permissions",
+        {
+          "iosPermissions": [
+            "Camera"
+          ]
+        }
+      ],
+      [
         "react-native-nfc-manager",
         {
-          "nfcPermission": "Custom permission message",
+          "nfcPermission": "This app uses NFC to scan passports.",
           "selectIdentifiers": [
             "A0000002471001",
             "A0000002472001",

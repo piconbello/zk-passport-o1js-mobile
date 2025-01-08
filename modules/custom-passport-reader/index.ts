@@ -44,7 +44,27 @@ export function getMRZKey(passportNumber: string, dateOfBirth: string, dateOfExp
  * */
 export async function scanPassport(mrzKey: string): Promise<PassportData> {
   // return Promise.resolve({ openpassport: "{}"});
-  return await CustomPassportReaderModule.scanPassport(mrzKey);
+  let data = await CustomPassportReaderModule.scanPassport(mrzKey);
+  if (Array.isArray(data)) {
+    // [[key,value],[key,value],[key,value],...]
+    data = Object.fromEntries(data);
+  }
+  if (typeof data.openpassport === 'string') {
+    data.openpassport = JSON.parse(data.openpassport);
+  }
+  if (Array.isArray(data.openpassport)) {
+    // [[key,value],[key,value],[key,value],...]
+    data.openpassport = Object.fromEntries(data.openpassport);
+  }
+  return data as PassportData;
 }
 
-export { PassportData };
+export function stopScan(): void {
+  CustomPassportReaderModule.stopScan();
+}
+
+export function addMessageListener(listener: (message: string) => void): Subscription {
+  return CustomPassportReaderModule.addListener('onMessage', (event: any) => listener(event.message as string));
+}
+
+export { PassportData, Subscription };

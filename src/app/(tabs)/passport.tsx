@@ -22,6 +22,7 @@ import t from 'tcomb-validation';
 import ContractWebView from '@/components/contractWebView';
 import MRZScanner from '@/components/mrzScanner';
 import ExportButton from '@/components/ExportButton';
+import NFCScanner from '@/components/nfcScanner';
 //@ts-ignore
 const Form = t.form.Form;
 
@@ -179,42 +180,15 @@ type ScanButtonProps = { mrzKey: string, onPassportScanned: (data: any)=>void };
 function ScanButton({ mrzKey, onPassportScanned }: ScanButtonProps) {
   const toaster = useToast();
 
-  const [nfcSupported, setNFCSupported] = useState<boolean | undefined>();
-  const [nfcEnabled, setNFCEnabled] = useState<boolean | undefined>();
-
-  useEffect(() => {
-    NfcManager.isSupported()
-     .then((isSupported) => setNFCSupported(isSupported))
-     .catch(() => setNFCSupported(false));
-  }, [])
-
-  useEffect(() => {
-    if (!nfcSupported) return;
-    NfcManager.isEnabled()
-     .then(setNFCEnabled)
-     .catch(() => setNFCEnabled(false));
-  }, [nfcSupported]);
-
-  const handlePress = useCallback(() => {
-    if (!mrzKey) return;
-    console.log('Scanning passport NFC...');
-    scanPassport(mrzKey)
-      .then(onPassportScanned)
-      .catch(e => {
-        toaster.show({ type: 'error', message: `Failed to scan passport: ${e.message}` });
-        console.log(e);
-      });
-  }, [mrzKey, onPassportScanned]);
-
-  const isDisabled = !nfcEnabled || !mrzKey;
-  const label = nfcSupported === false ? 'No NFC' 
-    : nfcEnabled === false? 'NFC Unabled' 
-    : 'Scan Passport NFC'
+  const onError = useCallback((e: Error) => {
+    toaster.show({ type: 'error', message: `Failed to scan passport: ${e.message}` });
+  }, [toaster]);
 
   return (
-    <FAB icon="cellphone-nfc" variant="primary" size='small' mode="elevated"
-      style={tw`absolute right-4 bottom-2 rounded-full`}
-      disabled={isDisabled} label={label} onPress={handlePress}
+    <NFCScanner 
+      mrzKey={mrzKey}
+      onError={onError} 
+      onPassportScanned={onPassportScanned}
     />
   );
 }

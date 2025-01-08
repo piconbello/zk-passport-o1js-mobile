@@ -98,6 +98,8 @@ import java.security.PublicKey
 
 import com.google.gson.Gson;
 
+import androidx.core.os.bundleOf
+
 object Messages {
   const val SCANNING = "Scanning....."
   const val STOP_MOVING = "Stop moving....." 
@@ -157,13 +159,20 @@ class CustomPassportReaderModule : Module(), ReactActivityLifecycleListener {
     // )
 
     // Defines event names that the module can send to JavaScript.
-    Events("message") 
+    Events("onMessage") 
 
 
     // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
     // Function("getMRZKey") { passportNumber: string, dateOfBirth: String, dateOfExpiry: String ->
     //   "Hello world! 👋"
     // }
+
+    Function("stopScan") { ->
+      if (scanPromise != null) {
+        scanPromise?.reject("E_STOPPED", "Scan has been stopped", null)
+      }
+      resetState()
+    }
 
     // Defines a JavaScript function that always returns a Promise and whose native code
     // is by default dispatched on the different thread than the JavaScript runtime runs on.
@@ -243,7 +252,7 @@ class CustomPassportReaderModule : Module(), ReactActivityLifecycleListener {
 
   private fun eventMessageEmitter(message: String) {
     // Send an event to JavaScript.
-    sendEvent("message", mapOf(
+    this@CustomPassportReaderModule.sendEvent("onMessage", bundleOf(
       "message" to message
     ))
   }

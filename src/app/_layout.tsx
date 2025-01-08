@@ -83,7 +83,7 @@ function RootLayoutNav() {
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-                <Stack.Screen name="R" options={{ headerTitle: 'Proof Request' }} />
+                <Stack.Screen name="R/[proofRequestToken]" options={{ headerTitle: 'Proof Request' }} />
               </Stack>
             </BottomSheetModalProvider>
           </ToastProvider>

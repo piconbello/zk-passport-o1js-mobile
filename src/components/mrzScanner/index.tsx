@@ -1,11 +1,23 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 import MrzReader, { CameraSelector, DocType } from '@corupta/react-native-mrz-reader';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import * as Permissions from 'react-native-permissions';
 
 import { Button, Text } from 'react-native-paper';
 
 // TODO REQUEST PERMISSION HERE.
+
+const cameraPermissionName = (() => {
+  switch(Platform.OS) {
+    case 'ios':
+      return Permissions.PERMISSIONS.IOS.CAMERA;
+    case 'android':
+      return Permissions.PERMISSIONS.ANDROID.CAMERA;
+    default:
+      throw new Error(`Unsupported platform: ${Platform.OS}`);
+  }
+})();
 
 type MRZScannerProps = {
   onMRZRead?: (mrz: string) => void,
@@ -48,18 +60,31 @@ class MRZScanner extends React.PureComponent<MRZScannerProps, MRZScannerState> {
     }
   }
 
-  startScanner = () => {
-    this.bottomSheetRef?.current?.present();
+  startScanner = async () => {
+    try {
+      const permissionStatus = await Permissions.request(cameraPermissionName);
+      switch(permissionStatus) {
+        case Permissions.RESULTS.GRANTED:
+        case Permissions.RESULTS.LIMITED:
+          break;
+        default:
+          console.log('No camera permission granted');
+          return;
+      }
+      this.bottomSheetRef?.current?.present();
+    } catch (error) {
+      console.log('Failed to start camera scanner', error);
+    }
   }
 
   stopScanner = () => {
+
     // NativeModules.RNMrzscannerlib.closeScanner();
   }
 
   render() {
     return (
       <View>
-        
         <Button mode="contained-tonal" onPress={this.startScanner} icon={"credit-card-scan-outline"}>
           Scan MRZ
         </Button>
