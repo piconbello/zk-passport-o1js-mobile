@@ -3,7 +3,7 @@
     "name": "zk-passport-o1js",
     "scheme": "zk-passport-o1js",
     "slug": "zk-passport-o1js",
-    "version": "1.0.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
@@ -17,6 +17,9 @@
       "bundleIdentifier": "com.piconbello.zkpassporto1js",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan MRZ."
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
     },
     "android": {
@@ -29,7 +32,7 @@
         "android.permission.CAMERA"
       ],
       "package": "com.piconbello.zkpassporto1js",
-      "runtimeVersion": "1.0.0"
+      "runtimeVersion": "0.2.0"
     },
     "web": {
       "bundler": "metro",
