@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Platform } from 'react-native';
+import { View, Platform, Dimensions } from 'react-native';
 import MrzReader, { CameraSelector, DocType } from '@corupta/react-native-mrz-reader';
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Permissions from 'react-native-permissions';
@@ -77,6 +77,29 @@ class MRZScanner extends React.PureComponent<MRZScannerProps, MRZScannerState> {
     }
   }
 
+  renderReader = () => {
+    const reader = (
+      <MrzReader
+        style={{ width: '100%', height: '100%' }}
+        docType={DocType.Passport}
+        cameraSelector={CameraSelector.Back}
+        onMRZRead={this.handleSuccessfulScan}
+      />
+    );
+    if (Platform.OS === 'ios') return reader;
+    const { height, width } = Dimensions.get('window');
+    const altHeight = 4 * width / 3;
+    return (
+      <View style={{ width: '100%', height: '100%' }}>
+        <View style={{ position: 'absolute', left: '50%', marginLeft: -width/2, top: '50%', marginTop: -altHeight/2 }}>
+          <View style={{ position: 'absolute', width: width, height: altHeight }}>
+            {reader}
+          </View>
+        </View>
+      </View>
+    )
+  }
+
   stopScanner = () => {
 
     // NativeModules.RNMrzscannerlib.closeScanner();
@@ -95,16 +118,9 @@ class MRZScanner extends React.PureComponent<MRZScannerProps, MRZScannerState> {
           index={1}
         >
           <BottomSheetView>
-            {
-              this.state.isScannerRunning ? (
-                <MrzReader
-                  style={{width: '100%', height: '100%'}}
-                  docType={DocType.Passport}
-                  cameraSelector={CameraSelector.Back}
-                  onMRZRead={this.handleSuccessfulScan}
-                />
-              ) : null
-            }
+              {
+                this.state.isScannerRunning ? this.renderReader() : null
+              }
           </BottomSheetView>
         </BottomSheetModal>
       </View>
