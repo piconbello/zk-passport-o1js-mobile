@@ -1,12 +1,11 @@
 {
   "expo": {
     "name": "zk-passport-o1js",
-    "schema": "zk-passport-o1js",
+    "scheme": "zk-passport-o1js",
     "slug": "zk-passport-o1js",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
