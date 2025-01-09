@@ -253,6 +253,13 @@ function SendToWebView({
   )
 }
 
+const styles = StyleSheet.create({
+  openpassportDataScrollView: {
+    flexGrow: 1,
+    maxWidth: '4000%', // 40 times the width of the screen, then, wrap.
+  }
+});
+
 export default function TabPassportScan() {
   const [mrzKey, setMRZKey] = useState("");
   const [scannedDataGroupList, setScannedDataGroupList] = useState<[string, string][]>([]);
@@ -295,7 +302,7 @@ export default function TabPassportScan() {
           <Divider />
           <List.Accordion title="Open Passport Formatted Data"
             id="openPassportData">
-            <ScrollView horizontal={true} contentContainerStyle={tw`flex-grow`}>
+            <ScrollView horizontal={true} contentContainerStyle={styles.openpassportDataScrollView}>
               <Text variant='bodySmall' style={tw`font-mono px-2 pb-4`}>
                 {JSON.stringify(openPassportData, null, 2)}
               </Text>

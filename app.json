@@ -29,7 +29,7 @@
         "android.permission.NFC",
         "android.permission.CAMERA"
       ],
-      "package": "com.corupta.zkpassporto1js",
+      "package": "com.piconbello.zkpassporto1js",
       "runtimeVersion": "1.0.0"
     },
     "web": {
