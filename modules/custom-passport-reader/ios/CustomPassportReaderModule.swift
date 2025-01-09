@@ -17,6 +17,11 @@ public class CustomPassportReaderModule: Module {
     //   "PI": Double.pi
     // ])
 
+    Function("stopScan") {
+      // no-op
+      return
+    }
+
 
     // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
     AsyncFunction("scanPassport") { (mrzKey: String, promise: Promise) in
@@ -48,7 +53,7 @@ public class CustomPassportReaderModule: Module {
         }
         
         do {
-          let passport = try await passportReader.readPassport( mrzKey: mrzKey, useExtendedMode: false,  customDisplayMessage:customMessageHandler)
+          let passport = try await passportReader.readPassport( mrzKey: mrzKey, skipPACE: true, useExtendedMode: false, customDisplayMessage:customMessageHandler)
           var dump = passport.dumpPassportData(selectedDataGroups: DataGroupId.allCases, includeActiveAuthenticationData: true)
 
           var ret = [String:String]()
@@ -195,12 +200,12 @@ public class CustomPassportReaderModule: Module {
 
     // Defines a JavaScript function that always returns a Promise and whose native code
     // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { (value: String) in
-      // Send an event to JavaScript.
-      self.sendEvent("onChange", [
-        "value": value
-      ])
-    }
+    // AsyncFunction("setValueAsync") { (value: String) in
+    //   // Send an event to JavaScript.
+    //   self.sendEvent("onChange", [
+    //     "value": value
+    //   ])
+    // }
   }
 
 

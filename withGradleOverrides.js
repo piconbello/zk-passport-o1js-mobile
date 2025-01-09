@@ -1,31 +1,33 @@
 // https://github.com/expo/eas-cli/issues/2455#issuecomment-2224340546
 
-const { withGradleProperties, withAppBuildGradle, AndroidConfig } = require('@expo/config-plugins');
+const { withGradleProperties, withAppBuildGradle, AndroidConfig, withProjectBuildGradle } = require('@expo/config-plugins');
 
-const addCustomExcludes = (gradle, excludes) => {
+const addCustomHelper = (name, value) => (gradle) => {
     const lines = gradle.split('\n');
     let beginIndex = lines.length, endIndex = lines.length;
+    const beginLine = `// withGradleOverrides.${name} BEGIN`;
+    const endLine = `// withGradleOverrides.${name} BEGIN`;
     for (let i = 0; i < lines.length; i++) {
-        if (/\/\/\s*withGradleOverrides.addCustomExcludes BEGIN/g.test(lines[i])) {
+        if (lines[i].trim() === beginLine) {
             beginIndex = i;
         }
-        if (/\/\/\s*withGradleOverrides.addCustomExcludes END/g.test(lines[i])) {
+        if (lines[i].trim() === endLine) {
             endIndex = i + 1;
         }
     }
-    const parseFun = `// withGradleOverrides.addCustomExcludes BEGIN
-android {
+    const patch = `${beginLine}\n${value}\n${endLine}\n`;
+    return [...lines.slice(0, beginIndex), patch, ...lines.slice(endIndex)].join('\n');
+}
+
+const addCustomExcludes = (gradle, excludes) => addCustomHelper('addCustomExcludes', 
+`android {
     configurations {
         all {
 ${excludes.map(exclude => 
 `           exclude ${exclude}`).join('\n')}
         }
     }
-}
-// withGradleOverrides.addCustomExcludes END
-`;
-    return [...lines.slice(0, beginIndex), parseFun, ...lines.slice(endIndex)].join('\n');
-}
+}`)(gradle);
 
 module.exports = (config) => {
     config = withGradleProperties(config, config => {
@@ -41,8 +43,13 @@ module.exports = (config) => {
         config.modResults.contents = addCustomExcludes(config.modResults.contents, [
             "group: 'org.bouncycastle', module: 'bcutil-jdk15to18'",
             "group: 'org.bouncycastle', module: 'bcprov-jdk15to18'"
-        ])
+        ]);
         return config;
     });
+
+    config = withProjectBuildGradle(config, config => {
+        return config;
+    });
+
     return config;
 }

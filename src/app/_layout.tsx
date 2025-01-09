@@ -19,6 +19,7 @@ import { PaperProvider } from 'react-native-paper';
 import { useColorScheme } from 'react-native';
 import Themes from '@/constants/Themes';
 import { ToastProvider } from 'react-native-paper-toast';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -31,9 +32,10 @@ export const unstable_settings = {
 
 };
 
-
 import { enGB, registerTranslation } from 'react-native-paper-dates';
 registerTranslation('en-GB', enGB);
+
+import { keepNodeJSCommunicationLifecycle } from '@/helpers/nodejsWorker';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -70,15 +72,20 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const theme = colorScheme === 'dark' ? Themes.DarkTheme : Themes.LightTheme;
 
+  keepNodeJSCommunicationLifecycle();
+
   return (
     <GestureHandlerRootView>
       <PaperProvider theme={theme}>
         <ThemeProvider value={theme}>
           <ToastProvider>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-            </Stack>
+            <BottomSheetModalProvider>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+                <Stack.Screen name="R/[proofRequestToken]" options={{ headerTitle: 'Proof Request' }} />
+              </Stack>
+            </BottomSheetModalProvider>
           </ToastProvider>
         </ThemeProvider>
       </PaperProvider>

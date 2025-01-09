@@ -12,7 +12,7 @@ const useRefMemo: RefMemo = (fn, dependencies) => {
     dependencies.some((dep, index) => dep !== prevDeps.current[index])
   ) {
     prevDeps.current = dependencies;
-    result.current = fn();
+    result.current = fn(result.current);
   }
 
   return result.current;

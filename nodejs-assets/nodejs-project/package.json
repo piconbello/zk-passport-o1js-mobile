@@ -1,0 +1,24 @@
+{
+  "name": "zk-passport-o1js-native-node",
+  "version": "0.0.1",
+  "description": "node part of the project",
+  "main": "main.js",
+  "author": "corupta",
+  "license": "",
+  "type": "commonjs",
+  "dependencies": {
+    "@homebridge/ciao": "^1.3.1",
+    "@koa/cors": "^5.0.0",
+    "@koa/router": "^13.1.0",
+    "@noble/curves": "^1.7.0",
+    "@thi.ng/base-n": "^2.7.22",
+    "bonjour-service": "^1.2.1",
+    "module-alias": "^2.2.3",
+    "msgpack-lite": "^0.1.26",
+    "serialize-error": "^11.0.3",
+    "socket.io": "^4.8.0",
+    "socket.io-msgpack-parser": "^3.0.2",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {}
+}

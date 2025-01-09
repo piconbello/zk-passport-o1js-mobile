@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "zk-passport-o1js",
+    "name": "ZkPassportO1JS",
+    "scheme": "zk-passport-o1js",
     "slug": "zk-passport-o1js",
-    "version": "1.0.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -14,7 +14,13 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.corupta.zkpassporto1js"
+      "bundleIdentifier": "com.piconbello.zkpassporto1js",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to scan MRZ."
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,10 +28,11 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.NFC"
+        "android.permission.NFC",
+        "android.permission.CAMERA"
       ],
-      "package": "com.corupta.zkpassporto1js",
-      "runtimeVersion": "1.0.0"
+      "package": "com.piconbello.zkpassporto1js",
+      "runtimeVersion": "0.2.0"
     },
     "web": {
       "bundler": "metro",
@@ -35,15 +42,24 @@
     "plugins": [
       "expo-router",
       [
+        "react-native-permissions",
+        {
+          "iosPermissions": [
+            "Camera"
+          ]
+        }
+      ],
+      [
         "react-native-nfc-manager",
         {
-          "nfcPermission": "Custom permission message",
+          "nfcPermission": "This app uses NFC to scan passports.",
           "selectIdentifiers": [
             "A0000002471001",
             "A0000002472001",
             "D2760000850101",
             "D2760000850100"
-          ]
+          ],
+          "includeNdefEntitlement": false
         }
       ],
       [
