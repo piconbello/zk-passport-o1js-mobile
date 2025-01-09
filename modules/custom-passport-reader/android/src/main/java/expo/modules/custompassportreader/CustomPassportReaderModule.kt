@@ -382,6 +382,7 @@ class CustomPassportReaderModule : Module(), ReactActivityLifecycleListener {
         Log.e("MY_LOGS", "service gotten")
         service.open()
         Log.e("MY_LOGS", "service opened")
+        /*
         var paceSucceeded = false
         try {
           Log.e("MY_LOGS", "trying to get cardAccessFile...")
@@ -417,6 +418,9 @@ class CustomPassportReaderModule : Module(), ReactActivityLifecycleListener {
             Log.e("MY_LOGS", "BAC done")
           }
         }
+         */
+        service.sendSelectApplet(false)
+        service.doBAC(bacKey)
 
         
         val dg1In = service.getInputStream(PassportService.EF_DG1)
@@ -490,6 +494,7 @@ class CustomPassportReaderModule : Module(), ReactActivityLifecycleListener {
         val dg14InByte = ByteArrayInputStream(dg14Encoded)
         dg14File = DG14File(dg14InByte)
         val dg14FileSecurityInfo = dg14File.securityInfos
+        /* LET'S NOT TRY ANY CHIP AUTH EITHER BUT STILL READ DG14
         for (securityInfo: SecurityInfo in dg14FileSecurityInfo) {
           if (securityInfo is ChipAuthenticationPublicKeyInfo) {
             service.doEACCA(
@@ -501,6 +506,7 @@ class CustomPassportReaderModule : Module(), ReactActivityLifecycleListener {
             chipAuthSucceeded = true
           }
         }
+        */
       } catch (e: Exception) {
         Log.w("CustomPassportReaderModule", e)
       }
